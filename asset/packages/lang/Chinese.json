@@ -58,6 +58,13 @@
         "hide": "隐藏 AI 侧边栏",
         "sending": "发送中"
     },
+    "file": {
+        "open": "打开文件",
+        "save-as": "另存为",
+        "save-error": "保存文件失败",
+        "open-error": "打开文件失败",
+        "unsaved-changes": "文件有未保存的更改，是否保存？"
+    },
     "info-window-title": "提示",
     "title": "火凤编辑器",
     "help": "火凤编辑器\n版本：v0.4.2\n\n作者：chengzi404(gitee) remain(github)"

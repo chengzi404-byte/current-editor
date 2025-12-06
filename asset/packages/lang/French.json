@@ -58,6 +58,13 @@
         "hide": "Masquer la barre latérale IA",
         "sending": "Envoi en cours"
     },
+    "file": {
+        "open": "Ouvrir un fichier",
+        "save-as": "Enregistrer sous",
+        "save-error": "Échec de l'enregistrement du fichier",
+        "open-error": "Échec de l'ouverture du fichier",
+        "unsaved-changes": "Le fichier a des modifications non enregistrées. Enregistrer ?"
+    },
     "info-window-title": "Informations",
     "title": "Éditeur Phoenix",
     "help": "Éditeur Phoenix\nVersion : v0.4.2\n\nAuteur : chengzi404(gitee) remain(github)"
