@@ -58,6 +58,13 @@
         "hide": "Hide AI Sidebar",
         "sending": "Sending"
     },
+    "file": {
+        "open": "Open File",
+        "save-as": "Save As",
+        "save-error": "Save File Failed",
+        "open-error": "Open File Failed",
+        "unsaved-changes": "File has unsaved changes. Save?"
+    },
     "info-window-title": "Info",
     "title": "Phoenix Editor",
     "help": "Phoenix Editor\nVersion: v0.4.2\n\nAuthor: chengzi404(gitee) remain(github)"

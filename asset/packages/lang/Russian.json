@@ -58,6 +58,13 @@
         "hide": "Скрыть боковую панель AI",
         "sending": "Отправка"
     },
+    "file": {
+        "open": "Открыть файл",
+        "save-as": "Сохранить как",
+        "save-error": "Ошибка сохранения файла",
+        "open-error": "Ошибка открытия файла",
+        "unsaved-changes": "Файл имеет несохраненные изменения. Сохранить?"
+    },
     "info-window-title": "Информация",
     "title": "Редактор Phoenix",
     "help": "Редактор Phoenix\nВерсия: v0.4.2\n\nАвтор: chengzi404(gitee) remain(github)"

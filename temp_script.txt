@@ -1,1 +1,26 @@
+"""
+Phoenix Python Highlighter Test
+"""
+from tkinter import *
+from tkinter.ttk import *
+
+
+def event(arg):
+    """
+    function call
+    """
+    print("clicked!")
+
+root = Tk()
+root.title("Tkinter - Phoenix Test")    # Comment
+
+Button(text="Click Me!", command=event).pack()
+
+root.mainloop()
+
+
+
+
+
+
 

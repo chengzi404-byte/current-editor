@@ -58,6 +58,13 @@
         "hide": "KI-Seitenleiste ausblenden",
         "sending": "Senden"
     },
+    "file": {
+        "open": "Datei öffnen",
+        "save-as": "Speichern unter",
+        "save-error": "Datei speichern fehlgeschlagen",
+        "open-error": "Datei öffnen fehlgeschlagen",
+        "unsaved-changes": "Datei hat ungespeicherte Änderungen. Speichern?"
+    },
     "info-window-title": "Info",
     "title": "Phoenix Editor",
     "help": "Phoenix Editor\nVersion: v0.4.2\n\nAutor: chengzi404(gitee) remain(github)"

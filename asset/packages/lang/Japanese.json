@@ -58,6 +58,13 @@
         "hide": "AIサイドバーを非表示",
         "sending": "送信中"
     },
+    "file": {
+        "open": "ファイルを開く",
+        "save-as": "名前を付けて保存",
+        "save-error": "ファイルの保存に失敗しました",
+        "open-error": "ファイルのオープンに失敗しました",
+        "unsaved-changes": "ファイルに未保存の変更があります。保存しますか？"
+    },
     "info-window-title": "情報",
     "title": "Phoenix Editor（フェニックスエディタ）",
     "help": "Phoenix Editor（フェニックスエディタ）\nバージョン: v0.4.2\n\n作者: chengzi404(gitee) remain(github)"
