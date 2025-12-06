@@ -1,0 +1,64 @@
+{
+    "plugin": {
+        "download-success": [ "插件", "插件下载成功，请重启软件。" ],
+        "download-failture": [ "插件", "插件安装失败: {}" ]
+    }, 
+    "settings": {
+        "font": "字体",
+        "font-size": "字体大小",
+        "theme": "主题",
+        "languange": "语言",
+        "restart": "请重新启动软件来应用设置",
+        "close": "关闭",
+        "title": "设置",
+        "coding-languange": "编程语言",
+        "clear-cache": "清空缓存"
+    },
+    "menus": {
+        "configure": "设置",
+        "open-settings": "设置",
+        "file": "文件",
+        "new-file": "新建文件",
+        "new-window": "新建窗口",
+        "open-file": "打开文件",
+        "save-file": "保存文件",
+        "save-as-file": "另存为",
+        "show-file-dir": "显示文件路径",
+        "exit": "退出",
+        "edit": "编辑",
+        "undo": "撤销",
+        "redo": "重做",
+        "copy": "复制",
+        "paste": "粘贴",
+        "delete": "删除",
+        "plugin": "插件",
+        "run": "运行",
+        "clear-output": "清除输出",
+        "help": "帮助"
+    },
+    "file-types": [
+        "Python 文件",
+        "HTML 文件",
+        "CSS 文件",
+        "JavaScript 文件",
+        "JSON 文件",
+        "Ruby 文件",
+        "C/C++ 文件",
+        "Objective-C 文件",
+        "所有文件"
+    ],
+    "plugin-types": [
+        "插件文件",
+        "所有文件"
+    ],
+    "ai": {
+        "title": "AI 助手",
+        "send": "发送",
+        "show": "显示 AI 侧边栏",
+        "hide": "隐藏 AI 侧边栏",
+        "sending": "发送中"
+    },
+    "info-window-title": "提示",
+    "title": "火凤编辑器",
+    "help": "火凤编辑器\n版本：v0.4.2\n\n作者：chengzi404(gitee) remain(github)"
+}

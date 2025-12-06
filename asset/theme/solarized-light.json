@@ -1,0 +1,39 @@
+{
+    "base": {
+        "background": "#FDF6E3",
+        "foreground": "#657B83",
+        "insertbackground": "#657B83",
+        "selectbackground": "#EEE8D5",
+        "selectforeground": "#657B83"
+    },
+    "keyword": "#859900",
+    "control": "#859900",
+    "operator": "#859900",
+    "punctuation": "#657B83",
+    
+    "class": "#CB4B16",
+    "function": "#268BD2",
+    "method": "#268BD2",
+    "variable": "#657B83",
+    "parameter": "#657B83",
+    "property": "#657B83",
+    
+    "string": "#2AA198",
+    "number": "#D33682",
+    "boolean": "#D33682",
+    "null": "#D33682",
+    "constant": "#D33682",
+    
+    "comment": "#93A1A1",
+    "docstring": "#93A1A1",
+    "todo": "#FF8C00",
+    
+    "decorator": "#268BD2",
+    "builtin": "#B58900",
+    "self": "#B58900",
+    "namespace": "#CB4B16",
+    
+    "type": "#B58900",
+    "type_annotation": "#B58900",
+    "interface": "#B58900"
+}

@@ -1,0 +1,64 @@
+{
+    "plugin": {
+        "download-success": ["Plugin", "Plugin downloaded successfully. Please restart the software."],
+        "download-failture": ["Plugin", "Plugin installation failed: {}"]
+    }, 
+    "settings": {
+        "font": "Font",
+        "font-size": "Font Size",
+        "theme": "Theme",
+        "languange": "Language",
+        "restart": "Please restart the software to apply settings",
+        "close": "Close",
+        "title": "Settings",
+        "coding-languange": "Coding Language",
+        "clear-cache": "Clear Cache"
+    },
+    "menus": {
+        "configure": "Settings",
+        "open-settings": "Settings",
+        "file": "File",
+        "new-file": "New File",
+        "new-window": "New Window",
+        "open-file": "Open File",
+        "save-file": "Save File",
+        "save-as-file": "Save As",
+        "show-file-dir": "Show File Path",
+        "exit": "Exit",
+        "edit": "Edit",
+        "undo": "Undo",
+        "redo": "Redo",
+        "copy": "Copy",
+        "paste": "Paste",
+        "delete": "Delete",
+        "plugin": "Plugin",
+        "run": "Run",
+        "clear-output": "Clear Output",
+        "help": "Help"
+    },
+    "file-types": [
+        "Python File",
+        "HTML File",
+        "CSS File",
+        "JavaScript File",
+        "JSON File",
+        "Ruby File",
+        "C/C++ File",
+        "Objective-C File",
+        "All Files"
+    ],
+    "plugin-types": [
+        "Plugin File",
+        "All Files"
+    ],
+    "ai": {
+        "title": "AI Assistant",
+        "send": "Send",
+        "show": "Show AI Sidebar",
+        "hide": "Hide AI Sidebar",
+        "sending": "Sending"
+    },
+    "info-window-title": "Info",
+    "title": "Phoenix Editor",
+    "help": "Phoenix Editor\nVersion: v0.4.2\n\nAuthor: chengzi404(gitee) remain(github)"
+}

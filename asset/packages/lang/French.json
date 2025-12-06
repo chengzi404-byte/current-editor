@@ -1,0 +1,64 @@
+{
+    "plugin": {
+        "download-success": ["Plugin", "Plugin téléchargé avec succès. Veuillez redémarrer le logiciel."],
+        "download-failture": ["Plugin", "Échec de l'installation du plugin : {}"]
+    },
+    "settings": {
+        "font": "Police",
+        "font-size": "Taille de police",
+        "theme": "Thème",
+        "languange": "Langue",
+        "restart": "Veuillez redémarrer le logiciel pour appliquer les paramètres",
+        "close": "Fermer",
+        "title": "Paramètres",
+        "coding-languange": "Langue de programmation",
+        "clear-cache": "Vider le cache"
+    },
+    "menus": {
+        "configure": "Paramètres",
+        "open-settings": "Paramètres",
+        "file": "Fichier",
+        "new-file": "Nouveau fichier",
+        "new-window": "Nouvelle fenêtre",
+        "open-file": "Ouvrir un fichier",
+        "save-file": "Enregistrer le fichier",
+        "save-as-file": "Enregistrer sous",
+        "show-file-dir": "Afficher le chemin du fichier",
+        "exit": "Quitter",
+        "edit": "Édition",
+        "undo": "Annuler",
+        "redo": "Rétablir",
+        "copy": "Copier",
+        "paste": "Coller",
+        "delete": "Supprimer",
+        "plugin": "Plugin",
+        "run": "Exécuter",
+        "clear-output": "Effacer la sortie",
+        "help": "Aide"
+    },
+    "file-types": [
+        "Fichier Python",
+        "Fichier HTML",
+        "Fichier CSS",
+        "Fichier JavaScript",
+        "Fichier JSON",
+        "Fichier Ruby",
+        "Fichier C/C++",
+        "Fichier Objective-C",
+        "Tous les fichiers"
+    ],
+    "plugin-types": [
+        "Fichier de plugin",
+        "Tous les fichiers"
+    ],
+    "ai": {
+        "title": "Assistant IA",
+        "send": "Envoyer",
+        "show": "Afficher la barre latérale IA",
+        "hide": "Masquer la barre latérale IA",
+        "sending": "Envoi en cours"
+    },
+    "info-window-title": "Informations",
+    "title": "Éditeur Phoenix",
+    "help": "Éditeur Phoenix\nVersion : v0.4.2\n\nAuteur : chengzi404(gitee) remain(github)"
+}

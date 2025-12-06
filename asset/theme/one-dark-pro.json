@@ -1,0 +1,39 @@
+{
+    "base": {
+        "background": "#282C34",
+        "foreground": "#ABB2BF",
+        "insertbackground": "#ABB2BF",
+        "selectbackground": "#3E4451",
+        "selectforeground": "#ABB2BF"
+    },
+    "keyword": "#C678DD",
+    "control": "#C678DD",
+    "operator": "#56B6C2",
+    "punctuation": "#ABB2BF",
+    
+    "class": "#E5C07B",
+    "function": "#61AFEF",
+    "method": "#61AFEF",
+    "variable": "#E06C75",
+    "parameter": "#ABB2BF",
+    "property": "#E06C75",
+    
+    "string": "#98C379",
+    "number": "#D19A66",
+    "boolean": "#D19A66",
+    "null": "#D19A66",
+    "constant": "#D19A66",
+    
+    "comment": "#7F848E",
+    "docstring": "#7F848E",
+    "todo": "#FF8C00",
+    
+    "decorator": "#61AFEF",
+    "builtin": "#56B6C2",
+    "self": "#E06C75",
+    "namespace": "#E5C07B",
+    
+    "type": "#E5C07B",
+    "type_annotation": "#E5C07B",
+    "interface": "#E5C07B"
+} 
