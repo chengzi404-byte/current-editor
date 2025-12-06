@@ -1,15 +1,19 @@
-# Phoenix Editor
+# Current Editor
 
-Phoenix Editor is a lightweight code editor designed to provide a clean and efficient programming experience. It supports syntax highlighting for multiple programming languages and comes equipped with essential code editing capabilities.
+Current Editor (Based from current editor, this project is the next version of the current editor) is a lightweight code editor designed to provide a clean and efficient programming experience. It supports syntax highlighting for multiple programming languages and comes equipped with essential code editing capabilities.
 
 ## Features
 
-- Support for multi-language syntax highlighting (Python, C/C++, Java, JavaScript, HTML, CSS, etc.)
-- Multi-tab management
-- Auto-save functionality
-- Basic code highlighting and syntax analysis
-- Extensible themes and language packs
-- File icon display support
+- **Multi-language Syntax Highlighting**: Support for Python, C/C++, Java, JavaScript, HTML, CSS, Ruby, Rust, Objective-C, Bash, and many other programming languages
+- **Multi-file Editor**: Support for multi-tab management, allowing simultaneous editing of multiple files
+- **Auto-save**: Automatically saves current content every 5 seconds to prevent data loss
+- **Intelligent Syntax Analysis**: Advanced code highlighting based on AST syntax tree, supporting differentiation of variables, function names, package names, and other data types
+- **Extensible Themes**: Built-in multiple dark/light themes with support for custom theme configurations
+- **Multi-language Interface**: Support for Chinese, English, French, German, Japanese, Russian, and other language interfaces
+- **Integrated AI Functionality**: Integration with Deepseek-R1 large language model for intelligent code assistance
+- **Command Line Integration**: Built-in command line interface for direct code execution and system commands
+- **Logging System**: Complete logging functionality for debugging and issue tracking
+- **Cross-platform Support**: Compatible with Windows and Linux/Unix operating systems
 
 ## Installation
 
@@ -17,13 +21,14 @@ Phoenix Editor is a lightweight code editor designed to provide a clean and effi
 2. Clone this repository to your local machine:
 
    ```bash
-   git clone https://gitee.com/your-repo/phoenix-editor.git
+   git clone https://gitee.com/your-repo/current-editor.git
+   git clone https://gitee.com/chengzi404-byte/phoenix-editor.git
    ```
 
 3. Navigate to the project directory and run the main program:
 
    ```bash
-   cd phoenix-editor
+   cd current-editor
    python main.py
    ```
 
@@ -47,9 +52,14 @@ All configuration information is stored in the `asset/settings.json` file. You c
 
 ## Main Modules
 
-- `library/highlighter/`: Syntax highlighting implementations for various languages
-- `library/tab_manager.py`: Tab management logic
+- `library/highlighter/`: Syntax highlighting implementations for various programming languages
 - `library/api.py`: Editor core configuration and initialization interface
+- `library/directory.py`: Directory management functionality
+- `library/editor_operations.py`: Editor operations implementation
+- `library/highlighter_factory.py`: Highlighter factory pattern
+- `library/logger.py`: Logging module
+- `library/multi_file_editor.py`: Multi-file editor functionality
+- `library/validator.py`: Validator module
 - `main.py`: Main program entry and basic functionality implementation
 - `asset/settings.json`: Stores user configurations
 - `asset/theme/`: Theme style files
@@ -71,7 +81,7 @@ All configuration information is stored in the `asset/settings.json` file. You c
 >   
 > * Cross-platform —— Supports operating systems such as Windows and Linux/Unix, adapting to various runtime environments.
 >   
-> * Open-source and free —— All source code for the project is available on [Gitee](https://gitee.com/creative-and-dream/phoenix-editor/), licensed under the MIT License. This means anyone can modify and redistribute the work, providing users with a high degree of customization.
+> * Open-source and free —— All source code for the project is available on [Gitee](https://gitee.com/creative-and-dream/current-editor/), licensed under the MIT License. This means anyone can modify and redistribute the work, providing users with a high degree of customization.
 >   
 > 
 > ### ⭕ Limitations
@@ -122,10 +132,12 @@ This project is licensed under the MIT License. Please refer to the [LICENSE](LI
 
 ## Download
 
-You can download the latest version of Phoenix Editor from the [Releases](README.md#Download) page.
+You can download the latest version of current Editor from the [Releases](README.md#Download) page.
 
 ## Related Links
 
-- [Gitee Project Home](https://gitee.com/creative-and-dream/phoenix-editor)
-- [Issue Tracking](https://gitee.com/creative-and-dream/phoenix-editor/issues)
+- [Gitee Project Home](https://gitee.com/creative-and-dream/current-editor)
+- [Issue Tracking](https://gitee.com/creative-and-dream/current-editor/issues)
 - [Pull Request Submission Guide](.gitee/PULL_REQUEST_TEMPLATE.zh-CN.md)
+- [Gitee Project Home](https://gitee.com/chengzi404-byte/phoenix-editor)
+- [Issue Tracking](https://gitee.com/chengzi404-byte/phoenix-editor/issues)
