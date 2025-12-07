@@ -1,4 +1,4 @@
-# current Editor
+# Current Editor
 
 current Editor 是一个轻量级的代码编辑器，旨在提供简洁高效的编程体验。它支持多种编程语言的语法高亮，并具备基本的代码编辑功能。
 
