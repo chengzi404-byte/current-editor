@@ -9,7 +9,5 @@
         "enable-type-hints": true,
         "enable-docstrings": true,
         "code": "python"
-    },
-    "run.timeout": 1000,
-    "run.racemode": false
+    }
 }

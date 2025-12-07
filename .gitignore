@@ -154,3 +154,7 @@ cython_debug/
 
 # Repo log
 editor.log
+
+# Tests & Demos
+test.*
+*_demo.*
