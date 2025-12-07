@@ -81,7 +81,7 @@ class MultiFileEditor:
         tab_id = self.notebook.add(tab_frame, text=title)
         
         # 创建语法高亮器
-        highlighter = self.highlighter_factory.create_highlighter(editor)
+        highlighter = self.highlighter_factory.create_highlighter(editor, file_path)
         
         # 应用主题
         try:

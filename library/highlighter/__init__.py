@@ -10,6 +10,8 @@ from .ruby import CodeHighlighter as RubyHighlighter
 from .json import CodeHighlighter as JsonHighlighter
 from .c import CodeHighlighter as CHighlighter
 from .objc import CodeHighlighter as ObjCHighlighter
+from .markdown import CodeHighlighter as MarkdownHighlighter
+from .log import CodeHighlighter as LogHighlighter
 
 __all__ = [
     'PythonHighlighter',
@@ -23,5 +25,7 @@ __all__ = [
     'RubyHighlighter',
     'JsonHighlighter',
     'CHighlighter',
-    'ObjCHighlighter'
-] 
+    'ObjCHighlighter',
+    'MarkdownHighlighter',
+    'LogHighlighter'
+]

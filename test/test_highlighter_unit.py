@@ -382,6 +382,169 @@ message = f"Hello {name}, you are {age} years old"
         self.assertGreater(len(number_tags), 0, "应该包含数字高亮")
 
 
+class TestMarkdownHighlighter(unittest.TestCase):
+    """Markdown高亮器测试"""
+    
+    def setUp(self):
+        """测试前准备"""
+        self.text_widget = MockTextWidget()
+        from library.highlighter.markdown import CodeHighlighter as MarkdownHighlighter
+        self.highlighter = MarkdownHighlighter(self.text_widget)
+    
+    def test_markdown_headings(self):
+        """测试Markdown标题高亮"""
+        code = """# 标题1
+
+## 标题2
+
+### 标题3
+"""
+        self.text_widget.content = code
+        self.highlighter.highlight()
+        tags = self.text_widget.get_tags()
+        
+        # 检查标签数量
+        self.assertGreater(len(tags), 0, "应该生成高亮标签")
+        
+        # 检查标题标签
+        heading_tags = [tag for tag in tags if 'heading' in tag['tag']]
+        self.assertGreater(len(heading_tags), 0, "应该包含标题高亮")
+    
+    def test_markdown_formatting(self):
+        """测试Markdown格式化高亮"""
+        code = """**粗体文本**
+
+*斜体文本*
+
+`行内代码`
+"""
+        self.text_widget.content = code
+        self.highlighter.highlight()
+        tags = self.text_widget.get_tags()
+        
+        # 检查格式化标签
+        bold_tags = [tag for tag in tags if 'bold' in tag['tag']]
+        italic_tags = [tag for tag in tags if 'italic' in tag['tag']]
+        code_tags = [tag for tag in tags if 'code' in tag['tag']]
+        
+        self.assertGreater(len(bold_tags), 0, "应该包含粗体高亮")
+        self.assertGreater(len(italic_tags), 0, "应该包含斜体高亮")
+        self.assertGreater(len(code_tags), 0, "应该包含代码高亮")
+    
+    def test_markdown_code_blocks(self):
+        """测试Markdown代码块高亮"""
+        code = """```python
+def hello():
+    print("Hello, World!")
+    return True
+```
+
+- 列表项1
+- 列表项2
+
+> 引用文本"""
+        self.text_widget.content = code
+        self.highlighter.highlight()
+        tags = self.text_widget.get_tags()
+        
+        # 检查代码块标签
+        code_block_tags = [tag for tag in tags if 'code_block' in tag['tag']]
+        self.assertGreater(len(code_block_tags), 0, "应该包含代码块高亮")
+
+
+class TestLogHighlighter(unittest.TestCase):
+    """日志高亮器测试"""
+    
+    def setUp(self):
+        """测试前准备"""
+        self.text_widget = MockTextWidget()
+        from library.highlighter.log import CodeHighlighter as LogHighlighter
+        self.highlighter = LogHighlighter(self.text_widget)
+    
+    def test_log_levels(self):
+        """测试日志级别高亮"""
+        code = """2024-01-15 10:30:25 INFO [main] Application started successfully
+2024-01-15 10:30:26 ERROR [database] Connection failed: timeout
+2024-01-15 10:30:27 WARNING [cache] Memory usage high: 85%
+2024-01-15 10:30:28 DEBUG [network] Request sent to: https://api.example.com
+2024-01-15 10:30:29 FATAL [system] Out of memory, shutting down"""
+        self.text_widget.content = code
+        self.highlighter.highlight()
+        tags = self.text_widget.get_tags()
+        
+        # 检查标签数量
+        self.assertGreater(len(tags), 0, "应该生成高亮标签")
+        
+        # 检查日志级别标签
+        level_tags = [tag for tag in tags if 'level' in tag['tag']]
+        self.assertGreater(len(level_tags), 0, "应该包含日志级别高亮")
+        
+        # 检查时间戳标签
+        timestamp_tags = [tag for tag in tags if 'timestamp' in tag['tag']]
+        self.assertGreater(len(timestamp_tags), 0, "应该包含时间戳高亮")
+    
+    def test_log_timestamp_and_message(self):
+        """测试日志时间戳和消息高亮"""
+        code = """2024-01-15 10:30:25 INFO [main] Application started successfully
+2024-01-15 10:30:26 ERROR [database] Connection failed: timeout"""
+        self.text_widget.content = code
+        self.highlighter.highlight()
+        tags = self.text_widget.get_tags()
+        
+        # 检查消息标签
+        message_tags = [tag for tag in tags if 'message' in tag['tag']]
+        self.assertGreater(len(message_tags), 0, "应该包含消息高亮")
+
+
+class TestHighlighterFactory(unittest.TestCase):
+    """高亮器工厂测试"""
+    
+    def setUp(self):
+        """测试前准备"""
+        from library.highlighter_factory import HighlighterFactory
+        self.factory = HighlighterFactory()
+    
+    def test_markdown_file_selection(self):
+        """测试Markdown文件高亮器选择"""
+        from tkinter import Text
+        text_widget = Text()
+        highlighter = self.factory.create_highlighter(text_widget, "test.md")
+        
+        # 检查是否为Markdown高亮器
+        self.assertIsNotNone(highlighter, "应该返回高亮器实例")
+        self.assertIn('markdown', str(highlighter.__class__).lower(), 
+                     "应该选择Markdown高亮器")
+    
+    def test_log_file_selection(self):
+        """测试日志文件高亮器选择"""
+        from tkinter import Text
+        text_widget = Text()
+        highlighter = self.factory.create_highlighter(text_widget, "app.log")
+        
+        # 检查是否为日志高亮器
+        self.assertIsNotNone(highlighter, "应该返回高亮器实例")
+        self.assertIn('log', str(highlighter.__class__).lower(), 
+                     "应该选择日志高亮器")
+    
+    def test_unknown_file_selection(self):
+        """测试未知文件类型高亮器选择"""
+        from tkinter import Text
+        text_widget = Text()
+        highlighter = self.factory.create_highlighter(text_widget, "unknown.xyz")
+        
+        # 检查是否返回默认高亮器
+        self.assertIsNotNone(highlighter, "应该返回默认高亮器实例")
+    
+    def test_no_file_path_selection(self):
+        """测试无文件路径时的高亮器选择"""
+        from tkinter import Text
+        text_widget = Text()
+        highlighter = self.factory.create_highlighter(text_widget)
+        
+        # 检查是否返回默认高亮器
+        self.assertIsNotNone(highlighter, "应该返回默认高亮器实例")
+
+
 def run_all_tests():
     """运行所有测试"""
     # 创建测试套件
@@ -391,6 +554,9 @@ def run_all_tests():
     test_suite.addTest(unittest.makeSuite(TestImportHighlighting))
     test_suite.addTest(unittest.makeSuite(TestKeywordHighlighting))
     test_suite.addTest(unittest.makeSuite(TestSyntaxHighlighting))
+    test_suite.addTest(unittest.makeSuite(TestMarkdownHighlighter))
+    test_suite.addTest(unittest.makeSuite(TestLogHighlighter))
+    test_suite.addTest(unittest.makeSuite(TestHighlighterFactory))
     
     # 运行测试
     runner = unittest.TextTestRunner(verbosity=2)

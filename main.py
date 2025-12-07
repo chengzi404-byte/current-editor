@@ -196,7 +196,7 @@ codearea.bind("<Button-3>", show_popup)
 
 # Initialization
 try:
-    codehighlighter = highlighter_factory.create_highlighter(codearea)
+    codehighlighter = highlighter_factory.create_highlighter(codearea, multi_editor.get_current_file_path())
     
     # Check 
     theme_file = f"{Path.cwd() / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
