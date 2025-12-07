@@ -31,7 +31,7 @@ class CodeHighlighter(BaseHighlighter):
 
         if isinstance(node, ast.JoinedStr):  # f-string
             self._highlight_f_string(node, start, end)
-        elif isinstance(node, ast.Bytes):     # byte string
+        elif isinstance(node, ast.Constant):     # byte string
             self._add_tag("bytes", start, end)
         elif isinstance(node, ast.Try):       # try-except block
             self._highlight_try_except(node)
