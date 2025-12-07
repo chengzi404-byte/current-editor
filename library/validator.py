@@ -6,9 +6,7 @@ def validate_settings(settings):
         "editor.font",
         "editor.fontsize",
         "editor.file-path",
-        "highlighter.syntax-highlighting",
-        "run.timeout",
-        "run.racemode"
+        "highlighter.syntax-highlighting"
     ]
     for field in required_fields:
         if field not in settings:
