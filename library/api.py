@@ -7,6 +7,7 @@ import json
 import pathlib
 from pathlib import Path
 from typing import Dict, Any, Optional
+from deprecated import deprecated
 
 
 class ConfigManager:
@@ -275,7 +276,7 @@ class Settings:
 
 
 # 向后兼容性 - 保持原有API接口
-with open("./asset/settings.json", "r", encoding="utf-8") as fp:
+with open(Path(__file__).parent.parent / "asset/settings.json", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
 
 # 注意：以下代码仅为向后兼容性保留，新代码应使用新的Settings类
@@ -299,7 +300,7 @@ class LegacySettings:
         @staticmethod
         def change(key, value):
             settings[f"editor.{key}"] = value
-            with open("./asset/settings.json", "w", encoding="utf-8") as fp:
+            with open(Path(__file__) / "asset/settings.json", "w", encoding="utf-8") as fp:
                 json.dump(settings, fp)
 
     class Highlighter:
@@ -309,7 +310,7 @@ class LegacySettings:
         @staticmethod
         def change(key, value):
             settings[f"highlighter.syntax-highlighting"][f"{key}"] = value
-            with open("./asset/settings.json", "w", encoding="utf-8") as fp:
+            with open(Path(__file__) / "asset/settings.json", "w", encoding="utf-8") as fp:
                 json.dump(settings, fp)
     
     class Run:
