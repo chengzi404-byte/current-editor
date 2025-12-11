@@ -9,7 +9,7 @@ from tkinter.font import Font
 from tkinter import (
     Tk, Menu, Text, BOTH, VERTICAL, HORIZONTAL, Button
 )
-from tkinter.ttk import PanedWindow, Entry, Notebook, Frame
+from tkinter.ttk import PanedWindow, Entry, Notebook, Frame, Treeview
 from pathlib import Path
 from library import directory
 import os
@@ -23,7 +23,10 @@ logger = setup_logger()
 highlighter_factory = HighlighterFactory()
 file_path = "temp_script.txt"
 
-with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
+# 获取项目根目录的绝对路径
+PROJECT_ROOT = Path(__file__).cwd().absolute()
+
+with open(f"{PROJECT_ROOT / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
 
 # Load language settings
@@ -39,13 +42,13 @@ if not debug:
 if not directory.test():
     directory.initlaze()
 
-with open(f"{Path.cwd() / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
+with open(f"{PROJECT_ROOT / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
     dark_themes = json.load(fp)
 
-with open(f"{Path.cwd() / 'asset' / 'theme' / 'terminalTheme' / 'dark.json'}", "r", encoding="utf-8") as fp:
+with open(f"{PROJECT_ROOT / 'asset' / 'theme' / 'terminalTheme' / 'dark.json'}", "r", encoding="utf-8") as fp:
     dark_terminal_theme = json.load(fp)
 
-with open(f"{Path.cwd() / 'asset' / 'theme' / 'terminalTheme' / 'light.json'}", "r", encoding="utf-8") as fp:
+with open(f"{PROJECT_ROOT / 'asset' / 'theme' / 'terminalTheme' / 'light.json'}", "r", encoding="utf-8") as fp:
     light_terminal_theme = json.load(fp)
 
 # -------------------- Create the window and menus --------------------
@@ -60,6 +63,21 @@ root.resizable(width=True, height=True)
 # Create the main paned window
 main_paned = PanedWindow(root, orient=HORIZONTAL)
 main_paned.pack(fill=BOTH, expand=True)
+
+# 添加文件树框架
+file_tree_frame = Frame(main_paned, width=200)
+main_paned.add(file_tree_frame, weight=1)
+
+# 创建文件树
+file_tree = Treeview(file_tree_frame)
+file_tree.heading("#0", text="文件浏览器")
+file_tree.pack(fill=BOTH, expand=True)
+
+# 添加文件树滚动条
+from tkinter import Scrollbar
+tree_scrollbar = Scrollbar(file_tree_frame, orient="vertical", command=file_tree.yview)
+tree_scrollbar.pack(side="right", fill="y")
+file_tree.configure(yscrollcommand=tree_scrollbar.set)
 
 # Create the code area paned window
 code_paned = PanedWindow(main_paned, orient=VERTICAL)
@@ -76,39 +94,79 @@ subpaned.add(inputarea)
 printarea = Text(subpaned, font=Font(root, family=Settings.Editor.font(), size=Settings.Editor.font_size()))
 subpaned.add(printarea)
 
-commandpaned = PanedWindow(code_paned, orient=HORIZONTAL)
-code_paned.add(commandpaned, weight=1)
-commandarea = Entry(commandpaned, font=Font(root, family=Settings.Editor.font(), size=Settings.Editor.font_size()))
-commandpaned.add(commandarea,weight=18)
-executebutton = Button(text=lang_dict["menus"]["run"])
-commandpaned.add(executebutton, weight=1)
+# commandpaned = PanedWindow(code_paned, orient=HORIZONTAL)
+# code_paned.add(commandpaned, weight=1)
+# commandarea = Entry(commandpaned, font=Font(root, family=Settings.Editor.font(), size=Settings.Editor.font_size()))
+# commandpaned.add(commandarea,weight=18)
+# executebutton = Button(text=lang_dict["menus"]["run"])
+# commandpaned.add(executebutton, weight=1)
 
 # Initialize multi-file editor
 from library.multi_file_editor import MultiFileEditor
-multi_editor = MultiFileEditor(editor_frame, printarea, inputarea, commandarea)
+multi_editor = MultiFileEditor(editor_frame, printarea, inputarea, None)
+
+# 添加文件树功能函数
+def populate_file_tree(path=".", parent=""):
+    """填充文件树"""
+    abs_path = os.path.abspath(path)  # 转换为绝对路径
+    for item in os.listdir(abs_path):
+        item_path = os.path.join(abs_path, item)
+        node_id = file_tree.insert(parent, "end", text=item, values=[item_path])
+        
+        if os.path.isdir(item_path):
+            populate_file_tree(item_path, node_id)
+
+def on_file_tree_select(event):
+    """处理文件树选择事件"""
+    selection = file_tree.selection()
+    if selection:
+        item = selection[0]
+        file_path = file_tree.item(item, "values")[0] if file_tree.item(item, "values") else None
+        if file_path and os.path.isfile(file_path):
+            multi_editor.open_file_in_new_tab(file_path)
+
+# 绑定文件树选择事件
+file_tree.bind("<<TreeviewSelect>>", on_file_tree_select)
+
+# 初始化文件树
+populate_file_tree(".")
 
 # Get the current editor for backward compatibility
 codearea = multi_editor.get_current_editor()
 
-# Config commandpaned widgets background color
-if Settings.Highlighter.syntax_highlighting()["theme"] in dark_themes:
-    commandarea.config(background="#2F4F4F")
-else:
-    commandarea.config(background="#F8F8F8")
+# # Config commandpaned widgets background color
+# if Settings.Highlighter.syntax_highlighting()["theme"] in dark_themes:
+#     commandarea.config(background="#2F4F4F")
+# else:
+#     commandarea.config(background="#F8F8F8")
 
 # Show last edited content
 try:
-    with open("temp_script.txt", "r", encoding="utf-8") as fp:
+    with open(f"{PROJECT_ROOT / 'temp_script.txt'}", "r", encoding="utf-8") as fp:
         if codearea:
             codearea.insert("1.0", fp.read())
 except FileNotFoundError:
     # If temp file doesn't exist, create an empty one
-    with open("temp_script.txt", "w", encoding="utf-8") as fp:
+    with open(f"{PROJECT_ROOT / 'temp_script.txt'}", "w", encoding="utf-8") as fp:
         fp.write("")
 
-# 初始化编辑器操作类
-editor_ops = EditorOperations(root, codearea, printarea, inputarea, commandarea, 
-                               None, None, None, None, None, multi_editor)
+# 添加全局函数用于打开文件夹
+def open_folder_global():
+    """全局函数用于打开文件夹"""
+    from tkinter import filedialog
+    folder_path = filedialog.askdirectory()
+    if folder_path:
+        # 清空现有的文件树
+        for item in file_tree.get_children():
+            file_tree.delete(item)
+        # 重新填充文件树
+        populate_file_tree(folder_path)
+
+# 修改初始化编辑器操作类的代码
+editor_ops = EditorOperations(root, codearea, printarea, inputarea, None, 
+                              None, None, None, None, None, multi_editor)
+# 将全局文件树引用附加到root对象上，以便editor_operations可以访问
+root.file_tree = file_tree
 
 # Binding
 root.bind("<Control-x>", lambda event: editor_ops.delete())
@@ -128,6 +186,8 @@ filemenu.add_command(command=editor_ops.new_file, label=lang_dict["menus"]["new-
 filemenu.add_command(command=editor_ops.new_window, label=lang_dict["menus"]["new-window"])
 filemenu.add_separator()
 filemenu.add_command(command=editor_ops.open_file, label=lang_dict["menus"]["open-file"])
+# 添加打开文件夹菜单项
+filemenu.add_command(command=editor_ops.open_folder, label="打开文件夹")
 filemenu.add_command(command=editor_ops.save_file, label=lang_dict["menus"]["save-file"])
 filemenu.add_command(command=editor_ops.save_as_file, label=lang_dict["menus"]["save-as-file"])
 filemenu.add_separator()
@@ -166,7 +226,7 @@ menu.add_cascade(menu=pluginmenu, label=lang_dict["menus"]["plugin"])
 menu.add_command(label="帮助", command=lambda: messagebox.showinfo(lang_dict["info-window-title"], lang_dict["help"]))
 
 # 绑定事件
-executebutton.config(command=editor_ops.execute_commands)
+# executebutton.config(command=editor_ops.execute_commands)
 
 # -------------------- 初始化功能 --------------------
 
@@ -199,7 +259,7 @@ try:
     codehighlighter = highlighter_factory.create_highlighter(codearea, multi_editor.get_current_file_path())
     
     # Check 
-    theme_file = f"{Path.cwd() / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
+    theme_file = f"{PROJECT_ROOT / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
     if not os.path.exists(theme_file):
         logger.warning(f"Warning: Theme file {theme_file} not found, using default theme")
         print(f"Theme file {theme_file} not found, using default theme")

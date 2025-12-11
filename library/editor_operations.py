@@ -251,6 +251,31 @@ class EditorOperations:
 
         Button(settings_window, text=self.lang_dict["settings"]["close"], command=settings_window.destroy).pack(anchor=E)
 
+    def open_folder(self):
+        """打开文件夹并更新文件树"""
+        from tkinter import filedialog
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            # 清空现有的文件树
+            for item in self.root.file_tree.get_children():
+                self.root.file_tree.delete(item)
+            # 重新填充文件树
+            self.populate_file_tree_for_open_folder(folder_path)
+
+    def populate_file_tree_for_open_folder(self, path):
+        """为打开文件夹功能填充文件树"""
+        import os
+        def _populate_subdirectories(tree, path, parent=""):
+            """递归填充子目录"""
+            for item in os.listdir(path):
+                item_path = os.path.join(path, item)
+                node_id = tree.insert(parent, "end", text=item, values=[item_path])
+                
+                if os.path.isdir(item_path):
+                    _populate_subdirectories(tree, item_path, node_id)
+        
+        _populate_subdirectories(self.root.file_tree, path)
+
     # -------------------- File Operations --------------------
     def open_file(self):
         """文件 > 打开文件"""
