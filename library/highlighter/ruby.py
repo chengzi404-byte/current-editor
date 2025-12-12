@@ -12,13 +12,13 @@ class CodeHighlighter(BaseHighlighter):
             'false', 'and', 'or', 'not', 'alias'
         }
         
-        self.syntax_colors.update({
-            "symbol": "#4EC9B0",
-            "instance_var": "#9CDCFE",
-            "class_var": "#4EC9B0",
-            "global_var": "#D16969",
-            "constant": "#4FC1FF",
-            "interpolation": "#D7BA7D"
-        })
+        # Ruby syntax colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("symbol", self.syntax_colors.get("constant", "#4EC9B0"))
+        self.syntax_colors.setdefault("instance_var", self.syntax_colors.get("variable", "#9CDCFE"))
+        self.syntax_colors.setdefault("class_var", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("global_var", self.syntax_colors.get("variable", "#D16969"))
+        self.syntax_colors.setdefault("constant", self.syntax_colors.get("constant", "#4FC1FF"))
+        self.syntax_colors.setdefault("interpolation", self.syntax_colors.get("operator", "#D7BA7D"))
         
         self.setup_tags() 

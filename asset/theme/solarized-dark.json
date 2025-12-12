@@ -35,5 +35,21 @@
     
     "type": "#B58900",
     "type_annotation": "#B58900",
-    "interface": "#B58900"
+    "interface": "#B58900",
+
+    "imported_function": "#268BD2",
+    "imported_class": "#CB4B16",
+    "imported_variable": "#839496",
+    "imported_module": "#CB4B16",
+    "imported_constant": "#D33682",
+    "imported_struct": "#CB4B16",
+    "imported_enum": "#CB4B16",
+    "imported_trait": "#CB4B16",
+    "imported_namespace": "#CB4B16",
+    "imported_header": "#CB4B16",
+    "imported_package": "#CB4B16",
+    "imported_interface": "#CB4B16",
+    "imported_annotation": "#CB4B16",
+    "imported_macro": "#CB4B16",
+    "imported_type": "#CB4B16"
 } 

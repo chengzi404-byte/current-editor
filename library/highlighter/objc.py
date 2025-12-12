@@ -18,11 +18,11 @@ class CodeHighlighter(BaseHighlighter):
             '@property', '@synthesize', '@dynamic', 'self', 'super'
         }
         
-        self.syntax_colors.update({
-            "message": "#DCDCAA",
-            "directive": "#C586C0",
-            "protocol": "#4EC9B0",
-            "property": "#9CDCFE"
-        })
+        # Objective-C syntax colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("message", self.syntax_colors.get("function", "#DCDCAA"))
+        self.syntax_colors.setdefault("directive", self.syntax_colors.get("decorator", "#C586C0"))
+        self.syntax_colors.setdefault("protocol", self.syntax_colors.get("interface", "#4EC9B0"))
+        self.syntax_colors.setdefault("property", self.syntax_colors.get("variable", "#9CDCFE"))
         
         self.setup_tags() 

@@ -3,15 +3,14 @@ from .base import BaseHighlighter
 class CodeHighlighter(BaseHighlighter):
     def __init__(self, text_widget):
         super().__init__(text_widget)
-        # HTML syntax colors
-        self.syntax_colors.update({
-            "tag": "#569CD6",
-            "attribute": "#9CDCFE",
-            "string": "#CE9178",
-            "comment": "#6A9955",
-            "doctype": "#569CD6",
-            "entity": "#D4D4D4"
-        })
+        # HTML syntax colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("tag", self.syntax_colors.get("keyword", "#569CD6"))
+        self.syntax_colors.setdefault("attribute", self.syntax_colors.get("variable", "#9CDCFE"))
+        self.syntax_colors.setdefault("string", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("comment", self.syntax_colors.get("comment", "#6A9955"))
+        self.syntax_colors.setdefault("doctype", self.syntax_colors.get("keyword", "#569CD6"))
+        self.syntax_colors.setdefault("entity", self.syntax_colors.get("operator", "#D4D4D4"))
         
         # HTML tags and attribute keywords
         self.tags = {
