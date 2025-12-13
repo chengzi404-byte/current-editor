@@ -9,45 +9,125 @@ import json
 from pathlib import Path
 
 class BaseHighlighter:
-    def __init__(self, text_widget):
+    def __init__(self, text_widget, theme_name="vscode-dark"):
         self.text_widget = text_widget
-        # Initlaze normal syntax colors
-        self.syntax_colors = {
-            "keyword": "#569CD6",
-            "control": "#C586C0",
-            "operator": "#D4D4D4",
-            "punctuation": "#D4D4D4",
-            "class": "#4EC9B0",
-            "function": "#DCDCAA",
-            "method": "#DCDCAA",
-            "variable": "#9CDCFE",
-            "parameter": "#9CDCFE",
-            "property": "#9CDCFE",
-            "string": "#CE9178",
-            "number": "#B5CEA8",
-            "boolean": "#569CD6",
-            "null": "#569CD6",
-            "constant": "#4FC1FF",
-            "comment": "#6A9955",
-            "docstring": "#6A9955",
-            "todo": "#FF8C00",
-            "decorator": "#C586C0",
-            "builtin": "#4EC9B0",
-            "self": "#569CD6",
-            "namespace": "#4EC9B0",
-            "type": "#4EC9B0",
-            "type_annotation": "#4EC9B0",
-            "interface": "#4EC9B0"
-        }
+        self.theme_name = theme_name
         
-        self.setup_tags()
-        self._setup_bindings()
+        # Load theme colors
+        self.syntax_colors = self._load_theme_colors(theme_name)
+        
+        # Initlaze normal syntax colors with fallback
+        if not self.syntax_colors:
+            self.syntax_colors = {
+                "keyword": "#569CD6",
+                "control": "#C586C0",
+                "operator": "#D4D4D4",
+                "punctuation": "#D4D4D4",
+                "class": "#4EC9B0",
+                "function": "#DCDCAA",
+                "method": "#DCDCAA",
+                "variable": "#9CDCFE",
+                "parameter": "#9CDCFE",
+                "property": "#9CDCFE",
+                "string": "#CE9178",
+                "number": "#B5CEA8",
+                "boolean": "#569CD6",
+                "null": "#569CD6",
+                "constant": "#4FC1FF",
+                "comment": "#6A9955",
+                "docstring": "#6A9955",
+                "todo": "#FF8C00",
+                "decorator": "#C586C0",
+                "builtin": "#4EC9B0",
+                "self": "#569CD6",
+                "namespace": "#4EC9B0",
+                "type": "#4EC9B0",
+                "type_annotation": "#4EC9B0",
+                "interface": "#4EC9B0"
+            }
         
         # Highlight delay config
         self._highlight_pending = False
         self._last_change_time = 0
         self._highlight_delay = 50  # Lower delay
         self._last_content = ""     # Add content cache
+        
+        # Auto pairs
+        self.auto_pairs = {
+            '"': '"',
+            "'": "'",
+            '(': ')',
+            '[': ']',
+            '{': '}',
+            '"""': '"""',
+            "'''": "'''"
+        }
+        
+        # Basic keyword list
+        self.keywords = set(keyword.kwlist)
+        self.builtins = set(dir(builtins))
+        
+        # Class names collection for class reference highlighting
+        self.class_names = set()
+        
+        # Languange keywords
+        self.language_keywords = {
+            'control': {'if', 'else', 'elif', 'while', 'for', 'try', 'except', 'finally', 'with', 'break', 'continue', 'return'},
+            'definition': {'def', 'class', 'lambda', 'async', 'await'},
+            'module': {'import', 'from', 'as'},
+            'value': {'True', 'False', 'None'},
+            'context': {'global', 'nonlocal', 'pass', 'yield'}
+        }
+        
+        self.setup_tags()
+        self._setup_bindings()
+    
+    def _load_theme_colors(self, theme_name):
+        """Load color configuration from theme file"""
+        try:
+            # Determine theme file path
+            theme_dir = Path(__file__).parent.parent.parent / "asset" / "theme"
+            
+            # Check if theme is in terminalTheme subdirectory
+            terminal_theme_path = theme_dir / "terminalTheme" / f"{theme_name}.json"
+            if terminal_theme_path.exists():
+                theme_file = terminal_theme_path
+            else:
+                theme_file = theme_dir / f"{theme_name}.json"
+            
+            if not theme_file.exists():
+                print(f"Theme file not found: {theme_file}")
+                return {}
+            
+            # Load theme configuration
+            with open(theme_file, 'r', encoding='utf-8') as f:
+                theme_config = json.load(f)
+            
+            # Extract color configuration (excluding base configuration)
+            colors = {}
+            for key, value in theme_config.items():
+                if key != "base" and isinstance(value, str) and value.startswith("#"):
+                    colors[key] = value
+            
+            print(f"Loaded {len(colors)} colors from theme: {theme_name}")
+            return colors
+            
+        except Exception as e:
+            print(f"Error loading theme {theme_name}: {e}")
+            return {}
+    
+    def setup_tags(self):
+        """Configure all syntax highlighting tags"""
+        for tag, color in self.syntax_colors.items():
+            self.text_widget.tag_configure(tag, foreground=color)
+            
+    def _setup_bindings(self):
+        """Set up event bindings"""
+        self.text_widget.bind('<<Modified>>', self._on_text_change)
+        self.text_widget.bind('<KeyRelease>', self._on_key_release)
+        self.text_widget.bind('(', self._handle_open_parenthesis)  # 绑定左括号
+        self.text_widget.bind('<Return>', self._handle_return_key)  # 绑定回车键
+        self.text_widget.bind('<Tab>', self._handle_tab_key)  # 绑定Tab键
         
         # Auto pairs
         self.auto_pairs = {
@@ -327,6 +407,12 @@ class BaseHighlighter:
             for child in ast.iter_child_nodes(node):
                 self._parent_map[child] = node
                 
+        # Initialize import tracking for better symbol recognition
+        if not hasattr(self, 'imported_modules'):
+            self.imported_modules = set()
+        if not hasattr(self, 'imported_symbols'):
+            self.imported_symbols = {}
+                
         # Highlight nodes with batched operations
         self._highlight_nodes_batch(tree)
     
@@ -547,6 +633,25 @@ class BaseHighlighter:
 
     def _highlight_attribute(self, node: ast.Attribute):
         """Highlight attribute access"""
+        # Check if this is an imported module attribute access
+        if hasattr(self, 'imported_modules') and isinstance(node.value, ast.Name):
+            module_name = node.value.id
+            if module_name in self.imported_modules:
+                # Highlight the module name
+                module_start, module_end = self.get_position(node.value)
+                self._add_tag("imported_module", module_start, module_end)
+                
+                # Highlight the attribute
+                attr_start = f"{node.lineno}.{node.col_offset + len(module_name) + 1}"
+                attr_end = f"{node.lineno}.{node.col_offset + len(module_name) + 1 + len(node.attr)}"
+                
+                # Determine attribute type
+                if node.attr[0].isupper() or self._is_likely_class_name(node.attr):
+                    self._add_tag("imported_class", attr_start, attr_end)
+                else:
+                    self._add_tag("imported_function", attr_start, attr_end)
+                return
+        
         # Highlight the base object
         if hasattr(node.value, 'lineno'):
             start, end = self.get_position(node.value)
@@ -603,28 +708,42 @@ class BaseHighlighter:
         elif node.id == 'self':
             self._add_tag("self", start, end)
         else:
-            # 根据上下文判断是函数引用还是变量引用
-            parent = self._get_parent_node(node)
-            if parent and isinstance(parent, ast.Call) and parent.func == node:
-                # 如果是函数调用的函数名，检查是否是类名
-                if node.id in self.class_names or self._is_likely_class_name(node.id):
-                    # 如果是类实例化，高亮为class
+            # Check if this is an imported symbol
+            if hasattr(self, 'imported_symbols') and node.id in self.imported_symbols:
+                # Determine symbol type based on context
+                parent = self._get_parent_node(node)
+                if parent and isinstance(parent, ast.Call) and parent.func == node:
+                    # Function call
+                    self._add_tag("imported_function", start, end)
+                elif node.id[0].isupper() or self._is_likely_class_name(node.id):
+                    # Class reference
+                    self._add_tag("imported_class", start, end)
+                else:
+                    # Variable reference
+                    self._add_tag("imported_variable", start, end)
+            else:
+                # 根据上下文判断是函数引用还是变量引用
+                parent = self._get_parent_node(node)
+                if parent and isinstance(parent, ast.Call) and parent.func == node:
+                    # 如果是函数调用的函数名，检查是否是类名
+                    if node.id in self.class_names or self._is_likely_class_name(node.id):
+                        # 如果是类实例化，高亮为class
+                        self._add_tag("class", start, end)
+                    else:
+                        # 如果是函数调用，高亮为function
+                        self._add_tag("function", start, end)
+                elif parent and isinstance(parent, ast.Attribute) and parent.value == node:
+                    # 如果是属性访问的基础对象，高亮为variable
+                    self._add_tag("variable", start, end)
+                elif parent and isinstance(parent, ast.Assign) and node in parent.targets:
+                    # 如果是赋值语句的目标，高亮为variable
+                    self._add_tag("variable", start, end)
+                elif node.id in self.class_names or self._is_likely_class_name(node.id):
+                    # 如果是类引用（如类型注解），高亮为class
                     self._add_tag("class", start, end)
                 else:
-                    # 如果是函数调用，高亮为function
-                    self._add_tag("function", start, end)
-            elif parent and isinstance(parent, ast.Attribute) and parent.value == node:
-                # 如果是属性访问的基础对象，高亮为variable
-                self._add_tag("variable", start, end)
-            elif parent and isinstance(parent, ast.Assign) and node in parent.targets:
-                # 如果是赋值语句的目标，高亮为variable
-                self._add_tag("variable", start, end)
-            elif node.id in self.class_names or self._is_likely_class_name(node.id):
-                # 如果是类引用（如类型注解），高亮为class
-                self._add_tag("class", start, end)
-            else:
-                # 默认情况下，高亮为variable
-                self._add_tag("variable", start, end)
+                    # 默认情况下，高亮为variable
+                    self._add_tag("variable", start, end)
                 
     def _is_likely_class_name(self, name: str) -> bool:
         """判断一个名称是否可能是类名（基于命名约定）"""

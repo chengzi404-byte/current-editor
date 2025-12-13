@@ -158,3 +158,6 @@ editor.log
 # Tests & Demos
 test.*
 *_demo.*
+
+# Test script
+temp_script.txt

@@ -8,25 +8,24 @@ class CodeHighlighter(BaseHighlighter):
     def __init__(self, text_widget):
         super().__init__(text_widget)
         
-        # Log specific colors
-        self.syntax_colors.update({
-            "timestamp": "#6A9955",
-            "log_level_debug": "#569CD6",
-            "log_level_info": "#4EC9B0",
-            "log_level_warning": "#DCDCAA",
-            "log_level_error": "#CE9178",
-            "log_level_critical": "#C586C0",
-            "logger_name": "#9CDCFE",
-            "file_path": "#B5CEA8",
-            "line_number": "#B5CEA8",
-            "ip_address": "#4FC1FF",
-            "url": "#4EC9B0",
-            "exception": "#CE9178",
-            "stack_trace": "#D4D4D4",
-            "numeric_value": "#B5CEA8",
-            "json_data": "#DCDCAA",
-            "sql_query": "#4EC9B0",
-        })
+        # Log specific colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("timestamp", self.syntax_colors.get("comment", "#6A9955"))
+        self.syntax_colors.setdefault("log_level_debug", self.syntax_colors.get("function", "#569CD6"))
+        self.syntax_colors.setdefault("log_level_info", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("log_level_warning", self.syntax_colors.get("variable", "#DCDCAA"))
+        self.syntax_colors.setdefault("log_level_error", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("log_level_critical", self.syntax_colors.get("decorator", "#C586C0"))
+        self.syntax_colors.setdefault("logger_name", self.syntax_colors.get("variable", "#9CDCFE"))
+        self.syntax_colors.setdefault("file_path", self.syntax_colors.get("number", "#B5CEA8"))
+        self.syntax_colors.setdefault("line_number", self.syntax_colors.get("number", "#B5CEA8"))
+        self.syntax_colors.setdefault("ip_address", self.syntax_colors.get("function", "#4FC1FF"))
+        self.syntax_colors.setdefault("url", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("exception", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("stack_trace", self.syntax_colors.get("operator", "#D4D4D4"))
+        self.syntax_colors.setdefault("numeric_value", self.syntax_colors.get("number", "#B5CEA8"))
+        self.syntax_colors.setdefault("json_data", self.syntax_colors.get("variable", "#DCDCAA"))
+        self.syntax_colors.setdefault("sql_query", self.syntax_colors.get("class", "#4EC9B0"))
         
         self.setup_tags()
         

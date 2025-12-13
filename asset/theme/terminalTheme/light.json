@@ -40,6 +40,22 @@
     "modified": "#007ACC",
     "deprecated": "#808080",
 
+    "imported_function": "#795E26",
+    "imported_class": "#2B91AF",
+    "imported_variable": "#001080",
+    "imported_module": "#800080",
+    "imported_constant": "#007ACC",
+    "imported_struct": "#2B91AF",
+    "imported_enum": "#2B91AF",
+    "imported_trait": "#2B91AF",
+    "imported_namespace": "#2B91AF",
+    "imported_header": "#2B91AF",
+    "imported_package": "#800080",
+    "imported_interface": "#2B91AF",
+    "imported_annotation": "#800080",
+    "imported_macro": "#800080",
+    "imported_type": "#2B91AF",
+
     "base": {
         "background": "#FFFFFF",
         "foreground": "#000000",

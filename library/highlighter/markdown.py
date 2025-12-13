@@ -7,21 +7,20 @@ class CodeHighlighter(BaseHighlighter):
     def __init__(self, text_widget):
         super().__init__(text_widget)
         
-        # Markdown specific colors
-        self.syntax_colors.update({
-            "heading": "#569CD6",
-            "bold": "#DCDCAA",
-            "italic": "#DCDCAA",
-            "code_block": "#CE9178",
-            "inline_code": "#CE9178",
-            "link": "#4EC9B0",
-            "image": "#4EC9B0",
-            "blockquote": "#6A9955",
-            "list": "#B5CEA8",
-            "horizontal_rule": "#D4D4D4",
-            "table": "#9CDCFE",
-            "strikethrough": "#C586C0",
-        })
+        # Markdown specific colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("heading", self.syntax_colors.get("keyword", "#569CD6"))
+        self.syntax_colors.setdefault("bold", self.syntax_colors.get("function", "#DCDCAA"))
+        self.syntax_colors.setdefault("italic", self.syntax_colors.get("function", "#DCDCAA"))
+        self.syntax_colors.setdefault("code_block", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("inline_code", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("link", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("image", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("blockquote", self.syntax_colors.get("comment", "#6A9955"))
+        self.syntax_colors.setdefault("list", self.syntax_colors.get("number", "#B5CEA8"))
+        self.syntax_colors.setdefault("horizontal_rule", self.syntax_colors.get("operator", "#D4D4D4"))
+        self.syntax_colors.setdefault("table", self.syntax_colors.get("variable", "#9CDCFE"))
+        self.syntax_colors.setdefault("strikethrough", self.syntax_colors.get("decorator", "#C586C0"))
         
         self.setup_tags()
         
