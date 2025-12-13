@@ -18,12 +18,12 @@ class CodeHighlighter(BaseHighlighter):
             'async', 'await', 'yield'
         }
         
-        self.syntax_colors.update({
-            "regex": "#D16969",
-            "template": "#CE9178",
-            "arrow": "#569CD6",
-            "object": "#4EC9B0",
-            "array": "#4EC9B0"
-        })
+        # JavaScript syntax colors - use theme colors
+        # Set default values for language-specific colors if not present in theme
+        self.syntax_colors.setdefault("regex", self.syntax_colors.get("string", "#D16969"))
+        self.syntax_colors.setdefault("template", self.syntax_colors.get("string", "#CE9178"))
+        self.syntax_colors.setdefault("arrow", self.syntax_colors.get("function", "#569CD6"))
+        self.syntax_colors.setdefault("object", self.syntax_colors.get("class", "#4EC9B0"))
+        self.syntax_colors.setdefault("array", self.syntax_colors.get("class", "#4EC9B0"))
         
         self.setup_tags() 

@@ -9,7 +9,7 @@ from tkinter.font import Font
 from tkinter import (
     Tk, Menu, Text, BOTH, VERTICAL, HORIZONTAL, Button
 )
-from tkinter.ttk import PanedWindow, Entry, Notebook, Frame, Treeview
+from tkinter.ttk import PanedWindow, Entry, Notebook, Frame
 from pathlib import Path
 from library import directory
 import os
@@ -23,10 +23,7 @@ logger = setup_logger()
 highlighter_factory = HighlighterFactory()
 file_path = "temp_script.txt"
 
-# 获取项目根目录的绝对路径
-PROJECT_ROOT = Path(__file__).cwd().absolute()
-
-with open(f"{PROJECT_ROOT / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
+with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
 
 # Load language settings
@@ -42,13 +39,13 @@ if not debug:
 if not directory.test():
     directory.initlaze()
 
-with open(f"{PROJECT_ROOT / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
+with open(f"{Path.cwd() / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
     dark_themes = json.load(fp)
 
-with open(f"{PROJECT_ROOT / 'asset' / 'theme' / 'terminalTheme' / 'dark.json'}", "r", encoding="utf-8") as fp:
+with open(f"{Path.cwd() / 'asset' / 'theme' / 'terminalTheme' / 'dark.json'}", "r", encoding="utf-8") as fp:
     dark_terminal_theme = json.load(fp)
 
-with open(f"{PROJECT_ROOT / 'asset' / 'theme' / 'terminalTheme' / 'light.json'}", "r", encoding="utf-8") as fp:
+with open(f"{Path.cwd() / 'asset' / 'theme' / 'terminalTheme' / 'light.json'}", "r", encoding="utf-8") as fp:
     light_terminal_theme = json.load(fp)
 
 # -------------------- Create the window and menus --------------------
@@ -142,12 +139,12 @@ codearea = multi_editor.get_current_editor()
 
 # Show last edited content
 try:
-    with open(f"{PROJECT_ROOT / 'temp_script.txt'}", "r", encoding="utf-8") as fp:
+    with open("temp_script.txt", "r", encoding="utf-8") as fp:
         if codearea:
             codearea.insert("1.0", fp.read())
 except FileNotFoundError:
     # If temp file doesn't exist, create an empty one
-    with open(f"{PROJECT_ROOT / 'temp_script.txt'}", "w", encoding="utf-8") as fp:
+    with open("temp_script.txt", "w", encoding="utf-8") as fp:
         fp.write("")
 
 # 添加全局函数用于打开文件夹
@@ -186,7 +183,6 @@ filemenu.add_command(command=editor_ops.new_file, label=lang_dict["menus"]["new-
 filemenu.add_command(command=editor_ops.new_window, label=lang_dict["menus"]["new-window"])
 filemenu.add_separator()
 filemenu.add_command(command=editor_ops.open_file, label=lang_dict["menus"]["open-file"])
-# 添加打开文件夹菜单项
 filemenu.add_command(command=editor_ops.open_folder, label="打开文件夹")
 filemenu.add_command(command=editor_ops.save_file, label=lang_dict["menus"]["save-file"])
 filemenu.add_command(command=editor_ops.save_as_file, label=lang_dict["menus"]["save-as-file"])
@@ -259,7 +255,7 @@ try:
     codehighlighter = highlighter_factory.create_highlighter(codearea, multi_editor.get_current_file_path())
     
     # Check 
-    theme_file = f"{PROJECT_ROOT / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
+    theme_file = f"{Path.cwd() / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
     if not os.path.exists(theme_file):
         logger.warning(f"Warning: Theme file {theme_file} not found, using default theme")
         print(f"Theme file {theme_file} not found, using default theme")
