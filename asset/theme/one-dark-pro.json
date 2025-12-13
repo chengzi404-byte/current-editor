@@ -6,6 +6,31 @@
         "selectbackground": "#3E4451",
         "selectforeground": "#ABB2BF"
     },
+    
+    "sidebar": {
+        "background": "#21252B",
+        "foreground": "#ABB2BF",
+        "border": "#3E4451",
+        "hover_background": "#2C313A",
+        "selected_background": "#61AFEF"
+    },
+    
+    "window": {
+        "background": "#282C34",
+        "foreground": "#ABB2BF",
+        "border": "#3E4451",
+        "titlebar_background": "#21252B",
+        "titlebar_foreground": "#ABB2BF"
+    },
+    
+    "treeview": {
+        "background": "#21252B",
+        "foreground": "#ABB2BF",
+        "selected_background": "#61AFEF",
+        "selected_foreground": "#282C34",
+        "hover_background": "#2C313A"
+    }
+},
     "keyword": "#C678DD",
     "control": "#C678DD",
     "operator": "#56B6C2",

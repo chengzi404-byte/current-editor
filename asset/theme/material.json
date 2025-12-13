@@ -3,9 +3,34 @@
         "background": "#263238",
         "foreground": "#EEFFFF",
         "insertbackground": "#EEFFFF",
-        "selectbackground": "#37474F",
+        "selectbackground": "#546E7A",
         "selectforeground": "#EEFFFF"
     },
+    
+    "sidebar": {
+        "background": "#1E272C",
+        "foreground": "#EEFFFF",
+        "border": "#37474F",
+        "hover_background": "#2A373E",
+        "selected_background": "#80CBC4"
+    },
+    
+    "window": {
+        "background": "#263238",
+        "foreground": "#EEFFFF",
+        "border": "#37474F",
+        "titlebar_background": "#1E272C",
+        "titlebar_foreground": "#EEFFFF"
+    },
+    
+    "treeview": {
+        "background": "#1E272C",
+        "foreground": "#EEFFFF",
+        "selected_background": "#80CBC4",
+        "selected_foreground": "#263238",
+        "hover_background": "#2A373E"
+    }
+},
     "keyword": "#C792EA",
     "control": "#C792EA",
     "operator": "#89DDFF",

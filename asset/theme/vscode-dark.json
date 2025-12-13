@@ -62,5 +62,29 @@
         "insertbackground": "#D4D4D4",
         "selectbackground": "#264F78",
         "selectforeground": "#D4D4D4"
+    },
+    
+    "sidebar": {
+        "background": "#252526",
+        "foreground": "#CCCCCC",
+        "border": "#3C3C3C",
+        "hover_background": "#2A2D2E",
+        "selected_background": "#094771"
+    },
+    
+    "window": {
+        "background": "#1E1E1E",
+        "foreground": "#D4D4D4",
+        "border": "#3C3C3C",
+        "titlebar_background": "#2D2D30",
+        "titlebar_foreground": "#CCCCCC"
+    },
+    
+    "treeview": {
+        "background": "#252526",
+        "foreground": "#CCCCCC",
+        "selected_background": "#094771",
+        "selected_foreground": "#FFFFFF",
+        "hover_background": "#2A2D2E"
     }
 }

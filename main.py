@@ -9,7 +9,7 @@ from tkinter.font import Font
 from tkinter import (
     Tk, Menu, Text, BOTH, VERTICAL, HORIZONTAL, Button
 )
-from tkinter.ttk import PanedWindow, Entry, Notebook, Frame
+from tkinter.ttk import PanedWindow, Entry, Notebook, Frame, Treeview
 from pathlib import Path
 from library import directory
 import os
@@ -285,6 +285,19 @@ try:
                     "selectforeground": "#D4D4D4"
                 }
             }
+    
+    # 应用界面样式（侧边栏、窗口、文件树）
+    if "sidebar" in theme_data:
+        file_tree_frame.configure(bg=theme_data["sidebar"]["background"])
+    if "window" in theme_data:
+        root.configure(bg=theme_data["window"]["background"])
+    if "treeview" in theme_data:
+        file_tree.configure(
+            bg=theme_data["treeview"]["background"],
+            fg=theme_data["treeview"]["foreground"],
+            selectbackground=theme_data["treeview"]["selected_background"],
+            selectforeground=theme_data["treeview"]["selected_foreground"]
+        )
     
     codehighlighter.set_theme(theme_data)
     codehighlighter.highlight()

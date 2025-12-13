@@ -156,10 +156,111 @@ class EditorOperations:
 
     # -------------------- Settings Panel Functions --------------------
     def open_settings_panel(self, codehighlighter, codehighlighter2):
-        """打开设置面板"""
+        """打开设置面板 - VSCode风格"""
         settings_window = Toplevel(self.root)
         settings_window.title(self.lang_dict["settings"]["title"])
-        settings_window.geometry("400x300")
+        settings_window.geometry("800x600")
+        settings_window.minsize(600, 400)
+
+        # 设置窗口样式
+        settings_window.configure(bg="#f3f3f3")
+        
+        # 创建主框架
+        main_frame = Frame(settings_window, bg="#f3f3f3")
+        main_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
+
+        # 创建搜索框
+        search_frame = Frame(main_frame, bg="#f3f3f3")
+        search_frame.pack(fill=X, pady=(0, 10))
+        
+        search_var = StringVar()
+        search_entry = Entry(search_frame, textvariable=search_var, font=Font(settings_window, size=10))
+        search_entry.pack(fill=X, padx=5)
+        search_entry.insert(0, "搜索设置")
+        
+        def clear_search_placeholder(event):
+            if search_var.get() == "搜索设置":
+                search_entry.delete(0, END)
+        
+        def restore_search_placeholder(event):
+            if not search_var.get():
+                search_entry.insert(0, "搜索设置")
+        
+        search_entry.bind("<FocusIn>", clear_search_placeholder)
+        search_entry.bind("<FocusOut>", restore_search_placeholder)
+        
+        # 创建搜索结果框架
+        search_results_frame = Frame(main_frame, bg="#f3f3f3")
+        search_results_label = Label(search_results_frame, text="", font=Font(settings_window, size=9), fg="#666666", bg="#f3f3f3")
+        search_results_label.pack(fill=X, pady=(5, 0))
+        
+        # 存储所有设置项信息
+        settings_items = []
+        
+        def add_setting_item(frame, label_text, widget, category, description=""):
+            """添加设置项并记录信息"""
+            settings_items.append({
+                "frame": frame,
+                "label_text": label_text,
+                "widget": widget,
+                "category": category,
+                "description": description
+            })
+        
+        def search_settings(*args):
+            """搜索设置项"""
+            search_text = search_var.get().lower().strip()
+            
+            # 如果搜索框为空或为占位符，显示所有设置项
+            if not search_text or search_text == "搜索设置":
+                for item in settings_items:
+                    item["frame"].pack(fill=X, padx=5, pady=5)
+                search_results_frame.pack_forget()
+                return
+            
+            # 搜索匹配的设置项
+            matched_items = []
+            for item in settings_items:
+                label_match = search_text in item["label_text"].lower()
+                category_match = search_text in item["category"].lower()
+                description_match = search_text in item["description"].lower()
+                
+                if label_match or category_match or description_match:
+                    matched_items.append(item)
+                    item["frame"].pack(fill=X, padx=5, pady=5)
+                else:
+                    item["frame"].pack_forget()
+            
+            # 显示搜索结果信息
+            if matched_items:
+                search_results_label.config(text=f"找到 {len(matched_items)} 个匹配的设置项")
+                search_results_frame.pack(fill=X, pady=(5, 0))
+            else:
+                search_results_label.config(text="未找到匹配的设置项")
+                search_results_frame.pack(fill=X, pady=(5, 0))
+        
+        # 绑定搜索事件
+        search_var.trace_add("write", search_settings)
+
+        # 创建选项卡框架
+        notebook = Notebook(main_frame)
+        notebook.pack(fill=BOTH, expand=True)
+
+        # 编辑器设置选项卡
+        editor_frame = Frame(notebook, bg="#ffffff")
+        notebook.add(editor_frame, text="编辑器")
+
+        # 外观设置选项卡
+        appearance_frame = Frame(notebook, bg="#ffffff")
+        notebook.add(appearance_frame, text="外观")
+
+        # 语言设置选项卡
+        language_frame = Frame(notebook, bg="#ffffff")
+        notebook.add(language_frame, text="语言")
+
+        # 高级设置选项卡
+        advanced_frame = Frame(notebook, bg="#ffffff")
+        notebook.add(advanced_frame, text="高级")
 
         def apply_settings():
             """立即应用设置"""
@@ -172,6 +273,19 @@ class EditorOperations:
                     theme_data = json.load(f)
                 codehighlighter.set_theme(theme_data)
                 self.codearea.configure(font=Font(settings_window, family=font_var.get(), size=fontsize_var.get()))
+
+                # 应用界面样式（侧边栏、窗口、文件树）
+                if "sidebar" in theme_data:
+                    self.root.file_tree_frame.configure(bg=theme_data["sidebar"]["background"])
+                if "window" in theme_data:
+                    self.root.configure(bg=theme_data["window"]["background"])
+                if "treeview" in theme_data:
+                    self.root.file_tree.configure(
+                        bg=theme_data["treeview"]["background"],
+                        fg=theme_data["treeview"]["foreground"],
+                        selectbackground=theme_data["treeview"]["selected_background"],
+                        selectforeground=theme_data["treeview"]["selected_foreground"]
+                    )
 
                 with open(f"{Path.cwd() / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
                     dark_themes = json.load(fp)
@@ -203,53 +317,110 @@ class EditorOperations:
 
         def clear_cache():
             shutil.rmtree(f"{Path.cwd() / 'library/__pycache__'}")
+            messagebox.showinfo(self.lang_dict["info-window-title"], "缓存已清除")
 
-        # 主题
+        # ========== 编辑器设置选项卡 ==========
+        editor_scroll_frame = Frame(editor_frame, bg="#ffffff")
+        editor_scroll_frame.pack(fill=BOTH, expand=True)
+
+        # 字体设置
+        font_section = LabelFrame(editor_scroll_frame, text="字体设置", bg="#ffffff", fg="#333333", font=Font(settings_window, size=10, weight="bold"))
+        font_section.pack(fill=X, padx=5, pady=5)
+
+        font_var = StringVar(value=Settings.Editor.font())
+        Label(font_section, text="字体:").grid(row=0, column=0, sticky=W, padx=5, pady=5)
+        font_entry = Entry(font_section, textvariable=font_var, width=30)
+        font_entry.grid(row=0, column=1, sticky=W+E, padx=5, pady=5)
+        add_setting_item(font_section, "字体", font_entry, "编辑器", "设置编辑器的字体类型")
+
+        fontsize_var = IntVar(value=Settings.Editor.font_size())
+        Label(font_section, text="字体大小:").grid(row=1, column=0, sticky=W, padx=5, pady=5)
+        fontsize_spinbox = Spinbox(font_section, from_=8, to=72, textvariable=fontsize_var, width=10)
+        fontsize_spinbox.grid(row=1, column=1, sticky=W, padx=5, pady=5)
+        add_setting_item(font_section, "字体大小", fontsize_spinbox, "编辑器", "设置编辑器的字体大小")
+
+        # 文件编码
+        encoding_var = StringVar(value=Settings.Editor.file_encoding())
+        Label(font_section, text="文件编码:").grid(row=2, column=0, sticky=W, padx=5, pady=5)
+        encoding_menu = OptionMenu(font_section, encoding_var, "utf-8", "gbk", "gb2312", "ascii")
+        encoding_menu.grid(row=2, column=1, sticky=W, padx=5, pady=5)
+        add_setting_item(font_section, "文件编码", encoding_menu, "编辑器", "设置文件的默认编码格式")
+
+        # ========== 外观设置选项卡 ==========
+        appearance_scroll_frame = Frame(appearance_frame, bg="#ffffff")
+        appearance_scroll_frame.pack(fill=BOTH, expand=True)
+
+        # 主题设置
+        theme_section = LabelFrame(appearance_scroll_frame, text="主题设置", bg="#ffffff", fg="#333333", font=Font(settings_window, size=10, weight="bold"))
+        theme_section.pack(fill=X, padx=5, pady=5)
+
         theme_var = StringVar(value=Settings.Highlighter.syntax_highlighting()["theme"])
-        Label(settings_window, text=self.lang_dict["settings"]["theme"]).pack(anchor=W)
+        Label(theme_section, text="主题:").grid(row=0, column=0, sticky=W, padx=5, pady=5)
+        
         rawdata = os.listdir(f"{Path.cwd() / 'asset' / 'theme'}")
         themes = []
-        rawdata.remove("terminalTheme")
+        if "terminalTheme" in rawdata:
+            rawdata.remove("terminalTheme")
         for theme in rawdata:
             themes.append(theme.split('.')[0])
 
-        OptionMenu(settings_window, theme_var, *themes).pack(anchor=W, fill=X)
+        theme_menu = OptionMenu(theme_section, theme_var, *themes)
+        theme_menu.grid(row=0, column=1, sticky=W+E, padx=5, pady=5)
+        add_setting_item(theme_section, "主题", theme_menu, "外观", "设置代码编辑器的主题样式")
 
-        # 字体
-        font_var = StringVar(value=Settings.Editor.font())
-        Label(settings_window, text=self.lang_dict["settings"]["font"]).pack(anchor=W)
-        Entry(settings_window, textvariable=font_var).pack(anchor=W, fill=X)
+        # ========== 语言设置选项卡 ==========
+        language_scroll_frame = Frame(language_frame, bg="#ffffff")
+        language_scroll_frame.pack(fill=BOTH, expand=True)
 
-        # 字体大小
-        fontsize_var = IntVar(value=Settings.Editor.font_size())
-        Label(settings_window, text=self.lang_dict["settings"]["font-size"]).pack(anchor=W)
-        Spinbox(settings_window, from_=8, to=72, textvariable=fontsize_var).pack(anchor=W, fill=X)
+        # 界面语言
+        lang_section = LabelFrame(language_scroll_frame, text="界面语言", bg="#ffffff", fg="#333333", font=Font(settings_window, size=10, weight="bold"))
+        lang_section.pack(fill=X, padx=5, pady=5)
+
+        lang_var = StringVar(value=Settings.Editor.lang())
+        Label(lang_section, text="语言:", bg="#ffffff", fg="#333333").grid(row=0, column=0, sticky=W, padx=5, pady=5)
+        lang_menu = OptionMenu(lang_section, lang_var, "Chinese", "English", "French", "German", "Japanese", "Russian")
+        lang_menu.grid(row=0, column=1, sticky=W, padx=5, pady=5)
+        add_setting_item(lang_section, "界面语言", lang_menu, "语言", "设置应用程序的界面语言")
+
+        # 编程语言
+        code_section = LabelFrame(language_scroll_frame, text="编程语言", bg="#ffffff", fg="#333333", font=Font(settings_window, size=10, weight="bold"))
+        code_section.pack(fill=X, padx=5, pady=5)
+
+        code_var = StringVar(value=Settings.Highlighter.syntax_highlighting()["code"])
+        Label(code_section, text="默认语言:").grid(row=0, column=0, sticky=W, padx=5, pady=5)
+        with open(f"{Path.cwd() / 'asset' / 'packages' / 'code_support.json'}", "r", encoding="utf-8") as fp:
+            support_code_type = json.load(fp)
+        code_menu = OptionMenu(code_section, code_var, *support_code_type)
+        code_menu.grid(row=0, column=1, sticky=W, padx=5, pady=5)
+        add_setting_item(code_section, "默认编程语言", code_menu, "语言", "设置默认的代码高亮语言")
+
+        # ========== 高级设置选项卡 ==========
+        advanced_scroll_frame = Frame(advanced_frame, bg="#ffffff")
+        advanced_scroll_frame.pack(fill=BOTH, expand=True)
+
+        # 缓存设置
+        cache_section = LabelFrame(advanced_scroll_frame, text="缓存设置", bg="#ffffff", fg="#333333", font=Font(settings_window, size=10, weight="bold"))
+        cache_section.pack(fill=X, padx=5, pady=5)
+
+        clear_cache_button = Button(cache_section, text="清除缓存", command=clear_cache, bg="#007acc", fg="white", font=Font(settings_window, size=9))
+        clear_cache_button.pack(padx=5, pady=5)
+        add_setting_item(cache_section, "清除缓存", clear_cache_button, "高级", "清除应用程序的缓存文件")
+
+        # 应用设置按钮
+        button_frame = Frame(main_frame, bg="#f3f3f3")
+        button_frame.pack(fill=X, pady=(10, 0))
+
+        Button(button_frame, text="应用", command=apply_settings, bg="#007acc", fg="white", font=Font(settings_window, size=9)).pack(side=LEFT, padx=5)
+        Button(button_frame, text="确定", command=lambda: [apply_settings(), settings_window.destroy()], bg="#007acc", fg="white", font=Font(settings_window, size=9)).pack(side=LEFT, padx=5)
+        Button(button_frame, text="取消", command=settings_window.destroy, bg="#cccccc", fg="#333333", font=Font(settings_window, size=9)).pack(side=LEFT, padx=5)
 
         # 立即应用设置
         theme_var.trace_add('write', lambda *args: apply_settings())
         font_var.trace_add('write', lambda *args: apply_settings())
         fontsize_var.trace_add('write', lambda *args: apply_settings())
-
-        # 多语言支持
-        lang_var = StringVar(value=Settings.Editor.lang())
-        Label(settings_window, text=self.lang_dict["settings"]["languange"]).pack(anchor=W)
-        OptionMenu(settings_window, lang_var, "Chinese", "English", "French", "German", "Japanese", "Russian").pack(anchor=W, fill=X)
-
+        encoding_var.trace_add('write', lambda *args: Settings.Editor.change("file-encoding", encoding_var.get()))
         lang_var.trace_add('write', lambda *args: apply_restart_settings())
-
-        # 代码设置
-        code_var = StringVar(value=Settings.Highlighter.syntax_highlighting()["code"])
-        with open(f"{Path.cwd() / 'asset' / 'packages' / 'code_support.json'}", "r", encoding="utf-8") as fp:
-            support_code_type = json.load(fp)
-        Label(settings_window, text=self.lang_dict["settings"]["coding-languange"]).pack(anchor=W)
-        OptionMenu(settings_window, code_var, *support_code_type).pack(anchor=W, fill=X)
-
         code_var.trace_add('write', lambda *args: apply_restart_settings())
-
-        # 清除缓存
-        Button(settings_window, text=self.lang_dict["settings"]["clear-cache"], command=clear_cache).pack(anchor=E)
-
-        Button(settings_window, text=self.lang_dict["settings"]["close"], command=settings_window.destroy).pack(anchor=E)
 
     def open_folder(self):
         """打开文件夹并更新文件树"""
