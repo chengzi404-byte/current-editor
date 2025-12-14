@@ -67,5 +67,5 @@
     },
     "info-window-title": "情報",
     "title": "Phoenix Editor（フェニックスエディタ）",
-    "help": "Phoenix Editor（フェニックスエディタ）\nバージョン: v0.4.2\n\n作者: chengzi404(gitee) remain(github)"
+    "help": "Phoenix Editor（フェニックスエディタ）\nバージョン: %s\n\n作者: chengzi404(gitee) remain(github)"
 }

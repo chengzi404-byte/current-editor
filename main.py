@@ -13,7 +13,7 @@ from pathlib import Path
 from library import directory
 import os
 import json
-import easygui
+from dist import __version__
 
 # -------------------- Global Variables --------------------
 global settings, highlighter_factory, file_path, logger
@@ -303,7 +303,7 @@ pluginmenu = Menu(tearoff=0)
 menu.add_cascade(menu=pluginmenu, label=lang_dict["menus"]["plugin"])
 
 # Help menu
-menu.add_command(label="帮助", command=lambda: messagebox.showinfo(lang_dict["info-window-title"], lang_dict["help"]))
+menu.add_command(label="帮助", command=lambda: messagebox.showinfo(lang_dict["info-window-title"], lang_dict["help"] % __version__))
 
 # Settings menu
 settingsmenu = Menu(tearoff=0)

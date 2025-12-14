@@ -67,5 +67,5 @@
     },
     "info-window-title": "Info",
     "title": "Phoenix Editor",
-    "help": "Phoenix Editor\nVersion: v0.4.2\n\nAuthor: chengzi404(gitee) remain(github)"
+    "help": "Phoenix Editor\nVersion: %s\n\nAuthor: chengzi404(gitee) remain(github)"
 }
