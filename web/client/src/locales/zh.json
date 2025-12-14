@@ -1,0 +1,65 @@
+{
+  "common": {
+    "save": "保存",
+    "open": "打开",
+    "new": "新建",
+    "delete": "删除",
+    "rename": "重命名",
+    "copy": "复制",
+    "cut": "剪切",
+    "paste": "粘贴",
+    "undo": "撤销",
+    "redo": "重做",
+    "search": "搜索",
+    "replace": "替换",
+    "settings": "设置",
+    "help": "帮助",
+    "about": "关于"
+  },
+  "editor": {
+    "title": "火凤编辑器",
+    "welcome": "欢迎使用火凤编辑器",
+    "newFile": "新建文件",
+    "openFile": "打开文件",
+    "saveFile": "保存文件",
+    "saveAs": "另存为",
+    "fileExplorer": "文件浏览器",
+    "terminal": "终端",
+    "theme": "主题",
+    "language": "语言",
+    "fontSize": "字体大小",
+    "lineNumbers": "行号",
+    "wordWrap": "自动换行",
+    "minimap": "小地图",
+    "format": "格式化",
+    "find": "查找",
+    "replace": "替换"
+  },
+  "menu": {
+    "file": "文件",
+    "edit": "编辑",
+    "view": "视图",
+    "tools": "工具",
+    "help": "帮助"
+  },
+  "status": {
+    "connected": "已连接",
+    "disconnected": "未连接",
+    "saving": "保存中...",
+    "saved": "已保存",
+    "modified": "已修改",
+    "readOnly": "只读"
+  },
+  "errors": {
+    "fileNotFound": "文件未找到",
+    "permissionDenied": "权限不足",
+    "connectionFailed": "连接失败",
+    "saveFailed": "保存失败",
+    "loadFailed": "加载失败"
+  },
+  "success": {
+    "fileSaved": "文件保存成功",
+    "fileOpened": "文件打开成功",
+    "connected": "连接成功"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "phoenix-editor-web",
+  "version": "1.0.0",
+  "description": "火凤编辑器 - 在线版本",
+  "main": "server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/server.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "start": "node server/server.js",
+    "install-all": "npm install && cd client && npm install"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.13.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["editor", "web", "code", "collaborative"],
+  "author": "火凤编辑器团队",
+  "license": "MIT"
+}

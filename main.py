@@ -311,9 +311,6 @@ menu.add_cascade(menu=settingsmenu, label=lang_dict["menus"]["configure"])
 # 设置菜单命令绑定
 settingsmenu.add_command(label=lang_dict["menus"]["open-settings"], command=lambda: open_settings())
 
-# 绑定事件
-# executebutton.config(command=editor_ops.execute_commands)
-
 # 定义全局变量用于存储高亮器引用
 codehighlighter_ref = None
 codehighlighter2_ref = None

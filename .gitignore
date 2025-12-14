@@ -161,3 +161,6 @@ test.*
 
 # Test script
 temp_script.txt
+
+# Node.js
+node_modules/

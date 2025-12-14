@@ -1,0 +1,65 @@
+{
+  "common": {
+    "save": "Save",
+    "open": "Open",
+    "new": "New",
+    "delete": "Delete",
+    "rename": "Rename",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "undo": "Undo",
+    "redo": "Redo",
+    "search": "Search",
+    "replace": "Replace",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About"
+  },
+  "editor": {
+    "title": "Phoenix Editor",
+    "welcome": "Welcome to Phoenix Editor",
+    "newFile": "New File",
+    "openFile": "Open File",
+    "saveFile": "Save File",
+    "saveAs": "Save As",
+    "fileExplorer": "File Explorer",
+    "terminal": "Terminal",
+    "theme": "Theme",
+    "language": "Language",
+    "fontSize": "Font Size",
+    "lineNumbers": "Line Numbers",
+    "wordWrap": "Word Wrap",
+    "minimap": "Minimap",
+    "format": "Format",
+    "find": "Find",
+    "replace": "Replace"
+  },
+  "menu": {
+    "file": "File",
+    "edit": "Edit",
+    "view": "View",
+    "tools": "Tools",
+    "help": "Help"
+  },
+  "status": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "modified": "Modified",
+    "readOnly": "Read Only"
+  },
+  "errors": {
+    "fileNotFound": "File not found",
+    "permissionDenied": "Permission denied",
+    "connectionFailed": "Connection failed",
+    "saveFailed": "Save failed",
+    "loadFailed": "Load failed"
+  },
+  "success": {
+    "fileSaved": "File saved successfully",
+    "fileOpened": "File opened successfully",
+    "connected": "Connected successfully"
+  }
+}

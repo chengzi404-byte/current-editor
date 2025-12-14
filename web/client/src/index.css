@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 编辑器样式 */
+.editor-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  @apply bg-dark-900 border-b border-gray-700;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.editor-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  @apply bg-dark-800 border-r border-gray-700;
+  width: 250px;
+  overflow-y: auto;
+}
+
+.editor-main {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Monaco Editor 自定义样式 */
+.monaco-editor {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
+}
+
+/* 文件树样式 */
+.file-tree {
+  @apply p-2;
+}
+
+.file-item {
+  @apply flex items-center px-2 py-1 text-sm hover:bg-gray-700 rounded cursor-pointer;
+}
+
+.file-item.active {
+  @apply bg-primary-600 text-white;
+}
+
+/* 状态栏样式 */
+.status-bar {
+  @apply bg-dark-900 border-t border-gray-700 text-xs px-4 py-1;
+  height: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 按钮样式 */
+.btn {
+  @apply px-3 py-1 rounded text-sm font-medium transition-colors;
+}
+
+.btn-primary {
+  @apply bg-primary-600 hover:bg-primary-700 text-white;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 hover:bg-gray-700 text-white;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    width: 180px;
+  }
+  .editor-header {
+    padding: 0 0.5rem;
+  }
+}
