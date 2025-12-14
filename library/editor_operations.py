@@ -22,11 +22,11 @@ from tkinter import (
 from tkinter.ttk import Notebook
 import requests
 
-from library.logger import setup_logger
+from library.logger import get_logger
 from library.api import Settings
 from library.ui_styles import apply_modern_style, get_style
 
-logger = setup_logger()
+logger = get_logger()
 
 
 class EditorOperations:

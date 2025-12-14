@@ -10,10 +10,10 @@ from tkinter import Text, messagebox, BOTH
 from tkinter.font import Font
 from tkinter.ttk import Notebook, Frame
 from library.highlighter_factory import HighlighterFactory
-from library.logger import setup_logger
+from library.logger import get_logger
 from library.api import Settings
 
-logger = setup_logger()
+logger = get_logger()
 
 
 class MultiFileEditor:
@@ -244,8 +244,15 @@ class MultiFileEditor:
             return False
         
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
+            # 检查文件大小
+            file_size = os.path.getsize(file_path)
+            
+            # 设置大文件阈值（5MB）
+            LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5MB
+            
+            if file_size > LARGE_FILE_THRESHOLD:
+                # 大文件处理
+                return self._handle_large_file(file_path, file_size)
             
             # 检查文件是否已经在其他选项卡中打开
             for tab_id, path in self.tab_files.items():
@@ -253,6 +260,10 @@ class MultiFileEditor:
                     # 切换到已打开的选项卡
                     self.notebook.select(tab_id)
                     return True
+            
+            # 正常读取小文件
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
             
             # 创建新选项卡
             tab_title = os.path.basename(file_path)
@@ -265,6 +276,32 @@ class MultiFileEditor:
                 f"打开文件失败: {str(e)}"
             )
             return False
+    
+    def _handle_large_file(self, file_path, file_size):
+        """处理大文件打开"""
+        from tkinter import messagebox
+        
+        # 显示大文件警告
+        size_mb = file_size / (1024 * 1024)
+        result = messagebox.askyesno(
+            "大文件警告",
+            f"文件较大（{size_mb:.1f} MB），直接加载可能导致程序卡顿。\n\n"
+            f"是否继续加载？\n"
+            f"建议：对于大文件，建议使用专业编辑器。"
+        )
+        
+        if not result:
+            return False
+        
+        # 检查文件是否已经在其他选项卡中打开
+        for tab_id, path in self.tab_files.items():
+            if path == file_path:
+                # 切换到已打开的选项卡
+                self.notebook.select(tab_id)
+                return True
+        
+        # 分块读取大文件
+        return self._open_large_file_in_chunks(file_path)
     
     def get_all_content(self):
         """获取所有选项卡的内容"""

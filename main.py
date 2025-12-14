@@ -1,5 +1,5 @@
 from library.highlighter_factory import HighlighterFactory
-from library.logger import setup_logger
+from library.logger import get_logger, shutdown_logger
 from library.api import Settings
 from library.editor_operations import EditorOperations
 from library.ui_styles import apply_modern_style, get_style
@@ -18,9 +18,12 @@ import easygui
 # -------------------- Global Variables --------------------
 global settings, highlighter_factory, file_path, logger
 global codehighlighter2, codehighlighter, APIKEY
-logger = setup_logger()
+logger = get_logger()
 highlighter_factory = HighlighterFactory()
 file_path = "temp_script.txt"
+
+# 记录程序启动信息
+logger.info("程序启动")
 
 with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
@@ -125,6 +128,9 @@ def populate_file_tree(path=".", parent=""):
     """填充文件树"""
     abs_path = os.path.abspath(path)  # 转换为绝对路径
     
+    # 记录文件树填充操作
+    logger.info(f"填充文件树: {abs_path}")
+    
     # 添加文件夹图标和文件图标
     for item in os.listdir(abs_path):
         item_path = os.path.join(abs_path, item)
@@ -167,6 +173,9 @@ def on_file_tree_expand(event):
             # 获取文件夹路径
             folder_path = file_tree.item(item, "values")[0]
             
+            # 记录文件夹展开操作
+            logger.info(f"展开文件夹: {folder_path}")
+            
             # 填充子节点
             populate_file_tree(folder_path, item)
 
@@ -177,10 +186,15 @@ def on_file_tree_select(event):
         item = selection[0]
         file_path = file_tree.item(item, "values")[0] if file_tree.item(item, "values") else None
         if file_path and os.path.isfile(file_path):
+            # 记录文件选择操作
+            logger.info(f"选择文件: {file_path}")
             multi_editor.open_file_in_new_tab(file_path)
 
 def refresh_file_tree():
     """刷新文件树"""
+    # 记录文件树刷新操作
+    logger.info("刷新文件树")
+    
     # 清空文件树
     for item in file_tree.get_children():
         file_tree.delete(item)
@@ -220,6 +234,9 @@ def open_folder_global():
     from tkinter import filedialog
     folder_path = filedialog.askdirectory()
     if folder_path:
+        # 记录文件夹打开操作
+        logger.info(f"打开文件夹: {folder_path}")
+        
         # 清空现有的文件树
         for item in file_tree.get_children():
             file_tree.delete(item)
@@ -310,8 +327,11 @@ def open_settings():
 # Setup auto-save timer
 def schedule_autosave():
     """自动保存定时器"""
-    editor_ops.autosave()
-    root.after(5000, schedule_autosave)  # Auto-save every 5 seconds
+    try:
+        editor_ops.autosave()
+        root.after(5000, schedule_autosave)  # Auto-save every 5 seconds
+    except Exception as e:
+        logger.error(f"自动保存失败: {str(e)}")
 
 # Start auto-save
 schedule_autosave()
@@ -328,12 +348,13 @@ codearea.bind("<Button-3>", show_popup)
 
 # Initialization
 try:
+    logger.info("开始初始化代码高亮器")
     codehighlighter = highlighter_factory.create_highlighter(codearea, multi_editor.get_current_file_path())
     
     # Check 
     theme_file = f"{Path.cwd() / "asset" / "theme" / Settings.Highlighter.syntax_highlighting()["theme"]}.json"
     if not os.path.exists(theme_file):
-        logger.warning(f"Warning: Theme file {theme_file} not found, using default theme")
+        logger.warning(f"主题文件不存在: {theme_file}, 使用默认主题")
         print(f"Theme file {theme_file} not found, using default theme")
         # Use built-in default theme
         theme_data = {
@@ -350,8 +371,9 @@ try:
         try:
             with open(theme_file, "r", encoding="utf-8") as f:
                 theme_data = json.load(f)
+            logger.info(f"成功加载主题文件: {theme_file}")
         except Exception as e:
-            logger.warning(f"Warning: Failed to load theme file: {str(e)}, using default theme")
+            logger.warning(f"加载主题文件失败: {str(e)}, 使用默认主题")
             theme_data = {
                 "base": {
                     "background": "#1E1E1E",
@@ -377,11 +399,16 @@ try:
     
     codehighlighter.set_theme(theme_data)
     codehighlighter.highlight()
+    logger.info("代码高亮器初始化完成")
 
     # Use the same configure to the terminal
     codehighlighter2 = highlighter_factory.create_highlighter(terminal_area, "log")
-    if Settings.Highlighter.syntax_highlighting()["theme"] in dark_themes: codehighlighter2.set_theme(dark_terminal_theme)
-    else: codehighlighter2.set_theme(light_terminal_theme)
+    if Settings.Highlighter.syntax_highlighting()["theme"] in dark_themes: 
+        codehighlighter2.set_theme(dark_terminal_theme)
+        logger.info("使用深色终端主题")
+    else: 
+        codehighlighter2.set_theme(light_terminal_theme)
+        logger.info("使用浅色终端主题")
     
     # Add test log content to demonstrate highlighting
     test_log_content = """2024-01-15 10:30:25 INFO [main] Starting application...
@@ -421,8 +448,29 @@ SQL query: SELECT * FROM users WHERE id = 12345;
     # Add new key bind
     root.bind("<Key>", on_key, add="+")
     
+    logger.info("程序初始化完成，准备启动主循环")
+    
 except Exception as e:
-    logger.warning(f"Warning: Code highlighter initialization failed: {str(e)}")
+    logger.error(f"代码高亮器初始化失败: {str(e)}")
 
 
-root.mainloop()
+# 程序退出时的清理函数
+def on_exit():
+    """程序退出时的清理操作"""
+    logger.info("程序正在退出...")
+    
+    # 关闭日志系统
+    shutdown_logger()
+    
+    # 销毁主窗口
+    root.destroy()
+
+# 绑定窗口关闭事件
+root.protocol("WM_DELETE_WINDOW", on_exit)
+
+# 启动主循环
+try:
+    root.mainloop()
+except Exception as e:
+    logger.error(f"程序主循环异常: {str(e)}")
+    shutdown_logger()
