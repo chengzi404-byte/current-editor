@@ -118,6 +118,26 @@ class EditorConfig:
         """获取文件路径"""
         return self._config.get("editor.file-path", "./temp_script.txt")
     
+    def wrap(self) -> bool:
+        """获取自动换行设置"""
+        return self._config.get("editor.wrap", True)
+    
+    def line_numbers(self) -> bool:
+        """获取行号显示设置"""
+        return self._config.get("editor.line-numbers", True)
+    
+    def highlight_current_line(self) -> bool:
+        """获取高亮当前行设置"""
+        return self._config.get("editor.highlight-current-line", True)
+    
+    def indent(self) -> int:
+        """获取缩进大小设置"""
+        return self._config.get("editor.indent", 4)
+    
+    def scrollbar(self) -> bool:
+        """获取滚动条显示设置"""
+        return self._config.get("editor.scrollbar", True)
+    
     def change(self, key: str, value: Any) -> None:
         """更改编辑器设置"""
         self._config.set(f"editor.{key}", value)
@@ -209,6 +229,48 @@ class AIConfig:
         self._config.set("apikey", apikey)
 
 
+class LanguageConfig:
+    """语言配置类"""
+    
+    def __init__(self, config_manager: ConfigManager):
+        self._config = config_manager
+    
+    def default(self) -> str:
+        """获取默认语言设置"""
+        return self._config.get("language.default", "python")
+    
+    def auto_detect(self) -> bool:
+        """获取自动检测编码设置"""
+        return self._config.get("language.auto-detect", True)
+    
+    def change(self, key: str, value: Any) -> None:
+        """更改语言设置"""
+        self._config.set(f"language.{key}", value)
+
+
+class AdvancedConfig:
+    """高级配置类"""
+    
+    def __init__(self, config_manager: ConfigManager):
+        self._config = config_manager
+    
+    def auto_save(self) -> bool:
+        """获取自动保存设置"""
+        return self._config.get("advanced.auto-save", True)
+    
+    def save_interval(self) -> int:
+        """获取保存间隔设置"""
+        return self._config.get("advanced.save-interval", 5)
+    
+    def debug_mode(self) -> bool:
+        """获取调试模式设置"""
+        return self._config.get("advanced.debug-mode", False)
+    
+    def change(self, key: str, value: Any) -> None:
+        """更改高级设置"""
+        self._config.set(f"advanced.{key}", value)
+
+
 class PathConfig:
     """路径配置类"""
     
@@ -245,6 +307,8 @@ class Settings:
     Run = RunConfig(_config_manager)
     Package = PackageConfig(_config_manager)
     AI = AIConfig(_config_manager)
+    Language = LanguageConfig(_config_manager)
+    Advanced = AdvancedConfig(_config_manager)
     Path = PathConfig()
     
     @staticmethod
@@ -259,6 +323,8 @@ class Settings:
         Settings.Run = RunConfig(_config_manager)
         Settings.Package = PackageConfig(_config_manager)
         Settings.AI = AIConfig(_config_manager)
+        Settings.Language = LanguageConfig(_config_manager)
+        Settings.Advanced = AdvancedConfig(_config_manager)
     
     @staticmethod
     def get_all_settings() -> Dict[str, Any]:
