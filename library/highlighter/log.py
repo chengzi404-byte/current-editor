@@ -106,6 +106,48 @@ class CodeHighlighter(BaseHighlighter):
             # Fallback to basic highlighting
             self._basic_highlight(text)
     
+    def _basic_highlight(self, text: str):
+        """Basic highlighting for log files when detailed highlighting fails"""
+        try:
+            # Split text into lines
+            lines = text.split('\n')
+            
+            for line_num, line in enumerate(lines, 1):
+                # Highlight timestamps (basic pattern)
+                timestamp_pattern = r'\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}'
+                for match in re.finditer(timestamp_pattern, line):
+                    start = f"{line_num}.{match.start()}"
+                    end = f"{line_num}.{match.end()}"
+                    self._add_tag("timestamp", start, end)
+                    
+                # Highlight log levels
+                log_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'debug', 'info', 'warning', 'error', 'critical']
+                for level in log_levels:
+                    pattern = r'\b' + re.escape(level) + r'\b'
+                    for match in re.finditer(pattern, line):
+                        start = f"{line_num}.{match.start()}"
+                        end = f"{line_num}.{match.end()}"
+                        if level.upper() in ['DEBUG', 'debug']:
+                            self._add_tag("log_level_debug", start, end)
+                        elif level.upper() in ['INFO', 'info']:
+                            self._add_tag("log_level_info", start, end)
+                        elif level.upper() in ['WARNING', 'warning', 'WARN', 'warn']:
+                            self._add_tag("log_level_warning", start, end)
+                        elif level.upper() in ['ERROR', 'error', 'ERR', 'err']:
+                            self._add_tag("log_level_error", start, end)
+                        elif level.upper() in ['CRITICAL', 'critical', 'FATAL', 'fatal']:
+                            self._add_tag("log_level_critical", start, end)
+                            
+                # Highlight numbers
+                number_pattern = r'\b\d+(?:\.\d+)?\b'
+                for match in re.finditer(number_pattern, line):
+                    start = f"{line_num}.{match.start()}"
+                    end = f"{line_num}.{match.end()}"
+                    self._add_tag("numeric_value", start, end)
+                    
+        except Exception as e:
+            print(f"Basic log highlight failed: {str(e)}")
+    
     def _highlight_timestamps(self, text: str):
         """Highlight timestamps in log files"""
         for pattern in self.timestamp_patterns:
