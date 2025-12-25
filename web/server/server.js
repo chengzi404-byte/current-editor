@@ -14,16 +14,16 @@ const io = socketIo(server, {
   }
 })
 
-// 中间件
+
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
-// 提供前端静态文件
+
 const staticPath = path.join(__dirname, '../client/dist')
 console.log('静态文件路径:', staticPath)
 app.use(express.static(staticPath))
 
-// 文件操作API
+
 app.get('/api/files', async (req, res) => {
   try {
     const basePath = process.cwd()
@@ -37,8 +37,7 @@ app.get('/api/files', async (req, res) => {
 app.get('/api/file/:filePath(*)', async (req, res) => {
   try {
     const filePath = path.join(process.cwd(), req.params.filePath)
-    
-    // 安全检查：确保文件在项目目录内
+
     if (!filePath.startsWith(process.cwd())) {
       return res.status(403).json({ success: false, error: 'Access denied' })
     }
@@ -61,7 +60,7 @@ app.get('/api/file/:filePath(*)', async (req, res) => {
       )
       res.json({ success: true, files: fileList })
     } else {
-      // 检查文件大小（限制为5MB）
+
       if (stats.size > 5 * 1024 * 1024) {
         return res.status(413).json({ 
           success: false, 
@@ -90,17 +89,15 @@ app.post('/api/file/:filePath(*)', async (req, res) => {
     const filePath = path.join(process.cwd(), req.params.filePath)
     const { content } = req.body
 
-    // 安全检查
     if (!filePath.startsWith(process.cwd())) {
       return res.status(403).json({ success: false, error: 'Access denied' })
     }
 
-    // 创建目录（如果不存在）
+
     await fs.mkdir(path.dirname(filePath), { recursive: true })
     
     await fs.writeFile(filePath, content, 'utf-8')
-    
-    // 广播文件变更
+
     io.emit('file_saved', {
       filePath: req.params.filePath,
       timestamp: Date.now()
@@ -116,14 +113,12 @@ app.delete('/api/file/:filePath(*)', async (req, res) => {
   try {
     const filePath = path.join(process.cwd(), req.params.filePath)
 
-    // 安全检查
     if (!filePath.startsWith(process.cwd())) {
       return res.status(403).json({ success: false, error: 'Access denied' })
     }
 
     await fs.unlink(filePath)
-    
-    // 广播文件删除
+
     io.emit('file_deleted', {
       filePath: req.params.filePath,
       timestamp: Date.now()
@@ -135,13 +130,11 @@ app.delete('/api/file/:filePath(*)', async (req, res) => {
   }
 })
 
-// 递归获取文件树
 async function getFileTree(dirPath, basePath = process.cwd()) {
   const items = await fs.readdir(dirPath)
   const result = []
 
   for (const item of items) {
-    // 忽略隐藏文件和node_modules
     if (item.startsWith('.') || item === 'node_modules') continue
 
     const fullPath = path.join(dirPath, item)
@@ -166,7 +159,7 @@ async function getFileTree(dirPath, basePath = process.cwd()) {
   return result
 }
 
-// Socket.IO 连接处理
+
 io.on('connection', (socket) => {
   console.log('用户连接:', socket.id)
 
@@ -181,7 +174,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('file_change', (data) => {
-    // 广播文件变更到同一房间的用户
+
     socket.to(data.roomId).emit('file_change', {
       ...data,
       userId: socket.id
@@ -189,7 +182,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('cursor_move', (data) => {
-    // 广播光标移动
+
     socket.to(data.roomId).emit('cursor_move', {
       ...data,
       userId: socket.id
@@ -201,7 +194,6 @@ io.on('connection', (socket) => {
   })
 })
 
-// 健康检查端点
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -210,7 +202,7 @@ app.get('/health', (req, res) => {
   })
 })
 
-// 提供前端静态文件
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'))
 })

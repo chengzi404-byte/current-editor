@@ -46,13 +46,13 @@ class BaseHighlighter:
                 "interface": "#4EC9B0"
             }
         
-        # Highlight delay config
+
         self._highlight_pending = False
         self._last_change_time = 0
-        self._highlight_delay = 50  # Lower delay
-        self._last_content = ""     # Add content cache
+        self._highlight_delay = 50
+        self._last_content = ""
         
-        # Auto pairs
+
         self.auto_pairs = {
             '"': '"',
             "'": "'",
@@ -63,14 +63,14 @@ class BaseHighlighter:
             "'''": "'''"
         }
         
-        # Basic keyword list
+
         self.keywords = set(keyword.kwlist)
         self.builtins = set(dir(builtins))
         
-        # Class names collection for class reference highlighting
+
         self.class_names = set()
         
-        # Languange keywords
+
         self.language_keywords = {
             'control': {'if', 'else', 'elif', 'while', 'for', 'try', 'except', 'finally', 'with', 'break', 'continue', 'return'},
             'definition': {'def', 'class', 'lambda', 'async', 'await'},
@@ -125,11 +125,11 @@ class BaseHighlighter:
         """Set up event bindings"""
         self.text_widget.bind('<<Modified>>', self._on_text_change)
         self.text_widget.bind('<KeyRelease>', self._on_key_release)
-        self.text_widget.bind('(', self._handle_open_parenthesis)  # 绑定左括号
-        self.text_widget.bind('<Return>', self._handle_return_key)  # 绑定回车键
-        self.text_widget.bind('<Tab>', self._handle_tab_key)  # 绑定Tab键
+        self.text_widget.bind('(', self._handle_open_parenthesis)
+        self.text_widget.bind('<Return>', self._handle_return_key)
+        self.text_widget.bind('<Tab>', self._handle_tab_key)
         
-        # Auto pairs
+
         self.auto_pairs = {
             '"': '"',
             "'": "'",
@@ -140,14 +140,14 @@ class BaseHighlighter:
             "'''": "'''"
         }
         
-        # Basic keyword list
+
         self.keywords = set(keyword.kwlist)
         self.builtins = set(dir(builtins))
         
-        # Class names collection for class reference highlighting
+
         self.class_names = set()
         
-        # Languange keywords
+
         self.language_keywords = {
             'control': {'if', 'else', 'elif', 'while', 'for', 'try', 'except', 'finally', 'with', 'break', 'continue', 'return'},
             'definition': {'def', 'class', 'lambda', 'async', 'await'},
@@ -165,9 +165,9 @@ class BaseHighlighter:
         """Set up event bindings"""
         self.text_widget.bind('<<Modified>>', self._on_text_change)
         self.text_widget.bind('<KeyRelease>', self._on_key_release)
-        self.text_widget.bind('(', self._handle_open_parenthesis)  # 绑定左括号
-        self.text_widget.bind('<Return>', self._handle_return_key)  # 绑定回车键
-        self.text_widget.bind('<Tab>', self._handle_tab_key)  # 绑定Tab键
+        self.text_widget.bind('(', self._handle_open_parenthesis)
+        self.text_widget.bind('<Return>', self._handle_return_key)
+        self.text_widget.bind('<Tab>', self._handle_tab_key)
         
     def _on_text_change(self, event=None):
         """Handle text modification events"""
@@ -391,7 +391,7 @@ class BaseHighlighter:
 
     def _process_ast(self, tree: ast.AST):
         """Process AST tree with performance optimization"""
-        # Class names collection for class reference highlighting
+
         self.class_names = set()
         
         # Build parent map and collect class names in a single pass
