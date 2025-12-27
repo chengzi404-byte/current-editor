@@ -1,0 +1,79 @@
+{
+    "base": {
+        "background": "#FFFFFF",
+        "foreground": "#24292F",
+        "insertbackground": "#24292F",
+        "selectbackground": "#0969DA",
+        "selectforeground": "#FFFFFF"
+    },
+    
+    "sidebar": {
+        "background": "#F6F8FA",
+        "foreground": "#24292F",
+        "border": "#D0D7DE",
+        "hover_background": "#EAECEF",
+        "selected_background": "#0969DA"
+    },
+    
+    "window": {
+        "background": "#FFFFFF",
+        "foreground": "#24292F",
+        "border": "#D0D7DE",
+        "titlebar_background": "#F6F8FA",
+        "titlebar_foreground": "#24292F"
+    },
+    
+    "treeview": {
+        "background": "#F6F8FA",
+        "foreground": "#24292F",
+        "selected_background": "#0969DA",
+        "selected_foreground": "#FFFFFF",
+        "hover_background": "#EAECEF"
+    },
+    "keyword": "#D73A49",
+    "control": "#D73A49",
+    "operator": "#24292E",
+    "punctuation": "#24292E",
+    
+    "class": "#6F42C1",
+    "function": "#6F42C1",
+    "method": "#6F42C1",
+    "variable": "#24292E",
+    "parameter": "#24292E",
+    "property": "#24292E",
+    
+    "string": "#032F62",
+    "number": "#005CC5",
+    "boolean": "#005CC5",
+    "null": "#005CC5",
+    "constant": "#005CC5",
+    
+    "comment": "#6A737D",
+    "docstring": "#6A737D",
+    "todo": "#FF8C00",
+    
+    "decorator": "#6F42C1",
+    "builtin": "#005CC5",
+    "self": "#24292E",
+    "namespace": "#6F42C1",
+    
+    "type": "#6F42C1",
+    "type_annotation": "#6F42C1",
+    "interface": "#6F42C1",
+
+    "imported_function": "#6F42C1",
+    "imported_class": "#6F42C1",
+    "imported_variable": "#24292E",
+    "imported_module": "#6F42C1",
+    "imported_constant": "#005CC5",
+    "imported_struct": "#6F42C1",
+    "imported_enum": "#6F42C1",
+    "imported_trait": "#6F42C1",
+    "imported_namespace": "#6F42C1",
+    "imported_header": "#6F42C1",
+    "imported_package": "#6F42C1",
+    "imported_interface": "#6F42C1",
+    "imported_annotation": "#6F42C1",
+    "imported_macro": "#6F42C1",
+    "imported_type": "#6F42C1"
+} 
