@@ -1,0 +1,79 @@
+{
+    "base": {
+        "background": "#282A36",
+        "foreground": "#F8F8F2",
+        "insertbackground": "#F8F8F2",
+        "selectbackground": "#44475A",
+        "selectforeground": "#F8F8F2"
+    },
+    
+    "sidebar": {
+        "background": "#191A21",
+        "foreground": "#F8F8F2",
+        "border": "#44475A",
+        "hover_background": "#21222C",
+        "selected_background": "#6272A4"
+    },
+    
+    "window": {
+        "background": "#282A36",
+        "foreground": "#F8F8F2",
+        "border": "#44475A",
+        "titlebar_background": "#191A21",
+        "titlebar_foreground": "#F8F8F2"
+    },
+    
+    "treeview": {
+        "background": "#191A21",
+        "foreground": "#F8F8F2",
+        "selected_background": "#6272A4",
+        "selected_foreground": "#F8F8F2",
+        "hover_background": "#21222C"
+    },
+    "keyword": "#FF79C6",
+    "control": "#FF79C6",
+    "operator": "#FF79C6",
+    "punctuation": "#F8F8F2",
+    
+    "class": "#50FA7B",
+    "function": "#50FA7B",
+    "method": "#50FA7B",
+    "variable": "#F8F8F2",
+    "parameter": "#F8F8F2",
+    "property": "#F8F8F2",
+    
+    "string": "#F1FA8C",
+    "number": "#BD93F9",
+    "boolean": "#BD93F9",
+    "null": "#BD93F9",
+    "constant": "#BD93F9",
+    
+    "comment": "#6272A4",
+    "docstring": "#6272A4",
+    "todo": "#FFB86C",
+    
+    "decorator": "#50FA7B",
+    "builtin": "#8BE9FD",
+    "self": "#FF79C6",
+    "namespace": "#50FA7B",
+    
+    "type": "#8BE9FD",
+    "type_annotation": "#8BE9FD",
+    "interface": "#8BE9FD",
+
+    "imported_function": "#50FA7B",
+    "imported_class": "#50FA7B",
+    "imported_variable": "#F8F8F2",
+    "imported_module": "#50FA7B",
+    "imported_constant": "#BD93F9",
+    "imported_struct": "#50FA7B",
+    "imported_enum": "#50FA7B",
+    "imported_trait": "#50FA7B",
+    "imported_namespace": "#50FA7B",
+    "imported_header": "#50FA7B",
+    "imported_package": "#50FA7B",
+    "imported_interface": "#50FA7B",
+    "imported_annotation": "#50FA7B",
+    "imported_macro": "#50FA7B",
+    "imported_type": "#50FA7B"
+}

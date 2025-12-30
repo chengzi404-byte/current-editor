@@ -1,0 +1,64 @@
+{
+    "base": {
+        "background": "#282C34",
+        "foreground": "#ABB2BF",
+        "insertbackground": "#ABB2BF",
+        "selectbackground": "#3E4451",
+        "selectforeground": "#ABB2BF"
+    },
+    
+    "sidebar": {
+        "background": "#21252B",
+        "foreground": "#ABB2BF",
+        "border": "#3E4451",
+        "hover_background": "#2C313A",
+        "selected_background": "#61AFEF"
+    },
+    
+    "window": {
+        "background": "#282C34",
+        "foreground": "#ABB2BF",
+        "border": "#3E4451",
+        "titlebar_background": "#21252B",
+        "titlebar_foreground": "#ABB2BF"
+    },
+    
+    "treeview": {
+        "background": "#21252B",
+        "foreground": "#ABB2BF",
+        "selected_background": "#61AFEF",
+        "selected_foreground": "#282C34",
+        "hover_background": "#2C313A"
+    }
+},
+    "keyword": "#C678DD",
+    "control": "#C678DD",
+    "operator": "#56B6C2",
+    "punctuation": "#ABB2BF",
+    
+    "class": "#E5C07B",
+    "function": "#61AFEF",
+    "method": "#61AFEF",
+    "variable": "#E06C75",
+    "parameter": "#ABB2BF",
+    "property": "#E06C75",
+    
+    "string": "#98C379",
+    "number": "#D19A66",
+    "boolean": "#D19A66",
+    "null": "#D19A66",
+    "constant": "#D19A66",
+    
+    "comment": "#7F848E",
+    "docstring": "#7F848E",
+    "todo": "#FF8C00",
+    
+    "decorator": "#61AFEF",
+    "builtin": "#56B6C2",
+    "self": "#E06C75",
+    "namespace": "#E5C07B",
+    
+    "type": "#E5C07B",
+    "type_annotation": "#E5C07B",
+    "interface": "#E5C07B"
+} 
