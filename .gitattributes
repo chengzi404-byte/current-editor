@@ -1,0 +1,9 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+*.png binary
+*.jpg binary
+*.md merge=union
+*.log binary
+*.exe binary
+*.js linguist-language=JavaScript
+*.py linguist-language=Python

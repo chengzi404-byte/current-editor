@@ -1,0 +1,71 @@
+{
+    "plugin": {
+        "download-success": ["Plugin", "Plugin wurde erfolgreich heruntergeladen. Bitte starten Sie die Software neu."],
+        "download-failture": ["Plugin", "Plugin-Installation fehlgeschlagen: {}"]
+    },
+    "settings": {
+        "font": "Schriftart",
+        "font-size": "Schriftgröße",
+        "theme": "Design",
+        "languange": "Sprache",
+        "restart": "Bitte starten Sie die Software neu, um die Einstellungen anzuwenden",
+        "close": "Schließen",
+        "title": "Einstellungen",
+        "coding-languange": "Programmiersprache",
+        "clear-cache": "Cache leeren"
+    },
+    "menus": {
+        "configure": "Einstellungen",
+        "open-settings": "Einstellungen",
+        "file": "Datei",
+        "new-file": "Neue Datei",
+        "new-window": "Neues Fenster",
+        "open-file": "Datei öffnen",
+        "save-file": "Datei speichern",
+        "save-as-file": "Speichern unter",
+        "show-file-dir": "Dateipfad anzeigen",
+        "exit": "Beenden",
+        "edit": "Bearbeiten",
+        "undo": "Rückgängig",
+        "redo": "Wiederholen",
+        "copy": "Kopieren",
+        "paste": "Einfügen",
+        "delete": "Löschen",
+        "plugin": "Plugin",
+        "run": "Ausführen",
+        "clear-output": "Ausgabe löschen",
+        "help": "Hilfe"
+    },
+    "file-types": [
+        "Python-Datei",
+        "HTML-Datei",
+        "CSS-Datei",
+        "JavaScript-Datei",
+        "JSON-Datei",
+        "Ruby-Datei",
+        "C/C++-Datei",
+        "Objective-C-Datei",
+        "Alle Dateien"
+    ],
+    "plugin-types": [
+        "Plugin-Datei",
+        "Alle Dateien"
+    ],
+    "ai": {
+        "title": "KI-Assistent",
+        "send": "Senden",
+        "show": "KI-Seitenleiste anzeigen",
+        "hide": "KI-Seitenleiste ausblenden",
+        "sending": "Senden"
+    },
+    "file": {
+        "open": "Datei öffnen",
+        "save-as": "Speichern unter",
+        "save-error": "Datei speichern fehlgeschlagen",
+        "open-error": "Datei öffnen fehlgeschlagen",
+        "unsaved-changes": "Datei hat ungespeicherte Änderungen. Speichern?"
+    },
+    "info-window-title": "Info",
+    "title": "Phoenix Editor",
+    "help": "Phoenix Editor\nVersion: v0.4.2\n\nAutor: chengzi404(gitee) remain(github)"
+}

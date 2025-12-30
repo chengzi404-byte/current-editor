@@ -1,0 +1,66 @@
+{
+    "keyword": "#0000FF",
+    "control": "#800080",
+    "operator": "#000000",
+    "punctuation": "#000000",
+    
+    "class": "#2B91AF",
+    "function": "#795E26",
+    "method": "#795E26",
+    "variable": "#001080",
+    "parameter": "#001080",
+    "property": "#001080",
+    
+    "string": "#A31515",
+    "number": "#098658",
+    "boolean": "#0000FF",
+    "null": "#0000FF",
+    "constant": "#007ACC",
+    
+    "comment": "#008000",
+    "docstring": "#008000",
+    "todo": "#FF8C00",
+    
+    "decorator": "#800080",
+    "builtin": "#2B91AF",
+    "self": "#0000FF",
+    "namespace": "#2B91AF",
+    
+    "type": "#2B91AF",
+    "type_annotation": "#2B91AF",
+    "interface": "#2B91AF",
+    
+    "error": "#FF0000",
+    "warning": "#FFA500",
+    
+    "regex": "#C00000",
+    "markup": "#A31515",
+    "link": "#0000FF",
+    
+    "modified": "#007ACC",
+    "deprecated": "#808080",
+
+    "imported_function": "#795E26",
+    "imported_class": "#2B91AF",
+    "imported_variable": "#001080",
+    "imported_module": "#800080",
+    "imported_constant": "#007ACC",
+    "imported_struct": "#2B91AF",
+    "imported_enum": "#2B91AF",
+    "imported_trait": "#2B91AF",
+    "imported_namespace": "#2B91AF",
+    "imported_header": "#2B91AF",
+    "imported_package": "#800080",
+    "imported_interface": "#2B91AF",
+    "imported_annotation": "#800080",
+    "imported_macro": "#800080",
+    "imported_type": "#2B91AF",
+
+    "base": {
+        "background": "#FFFFFF",
+        "foreground": "#000000",
+        "insertbackground": "#000000",
+        "selectbackground": "#ADD8E6",
+        "selectforeground": "#000000"
+    }
+}
