@@ -65,49 +65,6 @@ All configuration information is stored in the `asset/settings.json` file. You c
 - `asset/theme/`: Theme style files
 - `asset/packages/lang/`: Multi-language support files
 
-## Q&A
-
-**Q1: What programming language was used to develop this project?**
-
-> This project was developed using Python and integrates the **Deepseek-r1** large language model, enabling it to quickly respond to all user requests.
-> 
-> It uses the AST syntax tree for highlighting, implementing code highlighting for programming languages and supporting different data types across all languages.
-
-**Q2: What are the key features of this project?**
-
-> ### ✨ Advantages
-> 
-> * Lightweight —— Occupies only about 10MB of disk space and requires just 50MB of memory to run.
->   
-> * Cross-platform —— Supports operating systems such as Windows and Linux/Unix, adapting to various runtime environments.
->   
-> * Open-source and free —— All source code for the project is available on [Gitee](https://gitee.com/creative-and-dream/current-editor/), licensed under the MIT License. This means anyone can modify and redistribute the work, providing users with a high degree of customization.
->   
-> 
-> ### ⭕ Limitations
-> 
-> * No cloud storage functionality
->   
-> * No mobile application
-
-**Q3: What is the primary target audience for this project?**
-
-> The education sector. Compared to most IDEs used in education, this IDE offers several advantages; see *Q2*.
-
-**Q4: What are the advantages and disadvantages of this project compared to other education-sector IDEs on the market?**
-
-> | Feature               | Turtle Editor | This IDE |
-> |-----------------------|---------------|----------|
-> | Auto-save             | √             | √        |
-> | Basic code highlighting (keywords, numbers) | √             | √        |
-> | Advanced code highlighting (variables, function names, package names) | X             | √        |
-> | AI functionality      | X             | √        |
-> | Multi-language code highlighting | X             | √        |
-> | Run command           | O             | √        |
-> | Cloud storage         | √             | X        |
-> 
-> *Using Turtle Editor as an example here*
-
 ## Contribution
 
 We welcome code contributions and suggestions! Please follow these steps:
@@ -120,7 +77,7 @@ We welcome code contributions and suggestions! Please follow these steps:
 
 ## License
 
-This project is licensed under the MIT License. Please refer to the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License. Please refer to the [LICENSE](LICENSE) file for details.
 
 ## Version History
 
@@ -141,3 +98,16 @@ You can download the latest version of current Editor from the [Releases](README
 - [Pull Request Submission Guide](.gitee/PULL_REQUEST_TEMPLATE.zh-CN.md)
 - [Gitee Project Home](https://gitee.com/chengzi404-byte/phoenix-editor)
 - [Issue Tracking](https://gitee.com/chengzi404-byte/phoenix-editor/issues)
+
+## Testing
+
+Test code is located in the `test/` directory:
+
+- `test/test_highlighter_unit.py`: Tests for syntax highlighting functionality.
+- `test/test_vbash_unit.py`: Tests for VBash-related functionality.
+
+Run tests:
+
+```bash
+python -m unittest discover test
+```
