@@ -12,6 +12,7 @@ from tkinter.ttk import Notebook, Frame
 from library.highlighter_factory import HighlighterFactory
 from library.logger import get_logger
 from library.api import Settings
+from ui.tabs import SettingsTab, HelpTab
 
 logger = get_logger()
 
@@ -138,7 +139,9 @@ class MultiFileEditor:
             self.current_tab = selected_tab
     
     def close_current_tab(self):
-        """关闭当前选项卡"""
+        """
+        关闭当前选项卡
+        """
         if not self.current_tab:
             return
         
@@ -147,23 +150,80 @@ class MultiFileEditor:
         if editor and self.has_unsaved_changes():
             if not self.prompt_save_changes():
                 return  # 用户取消关闭
+    
+    def show_settings_tab(self, app, codehighlighter, codehighlighter2):
+        """
+        在新Tab中显示设置面板
         
-        # 关闭选项卡
-        self.notebook.forget(self.current_tab)
+        Args:
+            app: 应用程序实例
+            codehighlighter: 代码高亮器
+            codehighlighter2: 终端高亮器
+        """
+        # 检查是否已经存在设置Tab
+        for tab_id, file_path in self.tab_files.items():
+            if file_path == "__settings__":
+                self.notebook.select(tab_id)
+                return
         
-        # 清理资源
-        if self.current_tab in self.tab_files:
-            del self.tab_files[self.current_tab]
-        if self.current_tab in self.tab_editors:
-            del self.tab_editors[self.current_tab]
-        if self.current_tab in self.tab_highlighters:
-            del self.tab_highlighters[self.current_tab]
+        # 创建Tab框架
+        tab_frame = Frame(self.notebook)
+        tab_frame.pack(fill=BOTH, expand=True)
         
-        # 如果没有选项卡了，创建一个新的
-        if len(self.notebook.tabs()) == 0:
-            self.create_new_tab("Untitled", "")
-        else:
-            self.current_tab = self.notebook.select()
+        # 创建设置面板Tab组件
+        settings_tab = SettingsTab(tab_frame, app, codehighlighter, codehighlighter2)
+        settings_tab.pack(fill=BOTH, expand=True)
+        
+        # 获取Tab标题
+        tab_title = settings_tab.get_title()
+        
+        # 添加到Notebook
+        tab_id = self.notebook.add(tab_frame, text=tab_title)
+        
+        # 保存引用
+        self.tab_files[tab_id] = "__settings__"
+        self.tab_editors[tab_id] = None  # 非编辑类Tab，编辑器为None
+        self.tab_highlighters[tab_id] = None  # 非编辑类Tab，高亮器为None
+        
+        # 切换到新Tab
+        self.notebook.select(tab_id)
+        self.current_tab = tab_id
+    
+    def show_help_tab(self, app):
+        """
+        在新Tab中显示帮助面板
+        
+        Args:
+            app: 应用程序实例
+        """
+        # 检查是否已经存在帮助Tab
+        for tab_id, file_path in self.tab_files.items():
+            if file_path == "__help__":
+                self.notebook.select(tab_id)
+                return
+        
+        # 创建Tab框架
+        tab_frame = Frame(self.notebook)
+        tab_frame.pack(fill=BOTH, expand=True)
+        
+        # 创建帮助面板Tab组件
+        help_tab = HelpTab(tab_frame, app)
+        help_tab.pack(fill=BOTH, expand=True)
+        
+        # 获取Tab标题
+        tab_title = help_tab.get_title()
+        
+        # 添加到Notebook
+        tab_id = self.notebook.add(tab_frame, text=tab_title)
+        
+        # 保存引用
+        self.tab_files[tab_id] = "__help__"
+        self.tab_editors[tab_id] = None  # 非编辑类Tab，编辑器为None
+        self.tab_highlighters[tab_id] = None  # 非编辑类Tab，高亮器为None
+        
+        # 切换到新Tab
+        self.notebook.select(tab_id)
+        self.current_tab = tab_id
     
     def has_unsaved_changes(self):
         """检查当前选项卡是否有未保存的更改"""

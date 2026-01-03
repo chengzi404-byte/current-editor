@@ -18,6 +18,9 @@ class AsyncLogHandler:
         self.log_queue = queue.Queue(maxsize=max_queue_size)
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.running = True
+        self.max_single_file_size = 50 * 1024  # 单文件上限 50KB
+        self.max_total_size = 1 * 1024 * 1024  # 文件夹总大小上限 1MB
+        self.backup_count = 20  # 最多20个备份文件
         
         # 确保日志目录存在
         if not self.log_dir.exists():
@@ -27,20 +30,89 @@ class AsyncLogHandler:
         self.worker_thread = threading.Thread(target=self._process_logs, daemon=True)
         self.worker_thread.start()
         
-        # 启动自动清理线程
+        # 启动自动清理线程，每小时检查一次
         self.cleanup_thread = threading.Thread(target=self._auto_cleanup, daemon=True)
         self.cleanup_thread.start()
     
-    def _get_log_file_path(self, date_str=None):
-        """获取按日期分块的日志文件路径"""
+    def _get_log_file_path(self, date_str=None, backup_number=0):
+        """获取按日期和备份号分块的日志文件路径"""
         if date_str is None:
             date_str = datetime.now().strftime("%Y-%m-%d")
-        return self.log_dir / f"editor_{date_str}.log"
+        
+        if backup_number == 0:
+            return self.log_dir / f"editor_{date_str}.log"
+        else:
+            return self.log_dir / f"editor_{date_str}.{backup_number}.log"
+    
+    def _get_current_backup_number(self, date_str):
+        """获取当前日期的日志文件的最大备份号"""
+        log_files = list(self.log_dir.glob(f"editor_{date_str}*.log"))
+        max_backup = 0
+        
+        for log_file in log_files:
+            filename = log_file.stem
+            if filename == f"editor_{date_str}":
+                continue
+            try:
+                # 提取备份号，格式为 editor_2023-01-01.1
+                backup_str = filename.split(".")[-1]
+                backup_num = int(backup_str)
+                if backup_num > max_backup:
+                    max_backup = backup_num
+            except ValueError:
+                continue
+        
+        return max_backup
+    
+    def _calculate_total_log_size(self):
+        """计算日志文件夹的总大小"""
+        total_size = 0
+        for log_file in self.log_dir.glob("editor_*.log*"):
+            try:
+                total_size += log_file.stat().st_size
+            except OSError:
+                continue
+        return total_size
+    
+    def _check_total_size(self):
+        """检查日志文件夹总大小，超过限制则清理最旧的文件"""
+        total_size = self._calculate_total_log_size()
+        
+        while total_size > self.max_total_size:
+            # 获取所有日志文件并按修改时间排序（最旧的先删除）
+            log_files = []
+            for log_file in self.log_dir.glob("editor_*.log*"):
+                try:
+                    mtime = log_file.stat().st_mtime
+                    log_files.append((mtime, log_file))
+                except OSError:
+                    continue
+            
+            if not log_files:
+                break
+            
+            # 按修改时间排序，最旧的在前面
+            log_files.sort(key=lambda x: x[0])
+            
+            # 删除最旧的文件
+            oldest_file = log_files[0][1]
+            try:
+                oldest_size = oldest_file.stat().st_size
+                oldest_file.unlink()
+                total_size -= oldest_size
+                print(f"已清理旧日志文件: {oldest_file}")
+            except OSError as e:
+                print(f"清理日志文件失败: {e}")
+                break
     
     def _process_logs(self):
         """处理日志队列的线程函数"""
         current_date = None
-        current_handler = None
+        log_file = None
+        log_file_handle = None
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+        )
         
         while self.running:
             try:
@@ -50,25 +122,47 @@ class AsyncLogHandler:
                 # 检查是否需要切换日志文件
                 today = datetime.now().strftime("%Y-%m-%d")
                 if current_date != today:
-                    if current_handler:
-                        current_handler.close()
+                    # 关闭当前文件
+                    if log_file_handle:
+                        log_file_handle.close()
+                        log_file_handle = None
                     
-                    log_file = self._get_log_file_path(today)
-                    current_handler = RotatingFileHandler(
-                        str(log_file), 
-                        maxBytes=10 * 1024 * 1024,  # 10MB
-                        backupCount=5,
-                        encoding='utf-8'
-                    )
-                    formatter = logging.Formatter(
-                        '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
-                    )
-                    current_handler.setFormatter(formatter)
+                    # 设置新日期和文件路径
                     current_date = today
+                    log_file = self._get_log_file_path(today)
+                
+                # 检查当前文件大小
+                if log_file_handle:
+                    # 检查文件大小
+                    try:
+                        current_size = log_file_handle.tell()
+                        if current_size >= self.max_single_file_size:
+                            # 文件超过大小限制，关闭并轮换
+                            log_file_handle.close()
+                            log_file_handle = None
+                            
+                            # 计算新的备份号
+                            backup_num = self._get_current_backup_number(current_date) + 1
+                            
+                            # 重命名当前文件为备份文件
+                            backup_path = self._get_log_file_path(current_date, backup_num)
+                            log_file.rename(backup_path)
+                            
+                            # 检查总大小，超过则清理
+                            self._check_total_size()
+                    except OSError:
+                        # 文件可能已被删除，重新打开
+                        log_file_handle.close()
+                        log_file_handle = None
+                
+                # 如果文件未打开，打开它
+                if not log_file_handle:
+                    log_file_handle = open(log_file, 'a', encoding='utf-8')
                 
                 # 写入日志
-                if current_handler:
-                    current_handler.emit(log_record)
+                formatted_log = formatter.format(log_record)
+                log_file_handle.write(formatted_log + '\n')
+                log_file_handle.flush()  # 确保写入磁盘
                 
                 self.log_queue.task_done()
                 
@@ -78,11 +172,21 @@ class AsyncLogHandler:
             except Exception as e:
                 # 记录错误但继续运行
                 print(f"日志处理错误: {e}")
+                # 尝试关闭文件
+                if log_file_handle:
+                    try:
+                        log_file_handle.close()
+                    except:
+                        pass
+                    log_file_handle = None
                 continue
         
         # 清理资源
-        if current_handler:
-            current_handler.close()
+        if log_file_handle:
+            try:
+                log_file_handle.close()
+            except:
+                pass
     
     def _auto_cleanup(self):
         """自动清理过期日志文件的线程函数"""

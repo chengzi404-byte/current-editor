@@ -58,9 +58,40 @@ class SettingsManager:
         main_frame = Frame(settings_window)
         apply_modern_style(main_frame, "frame", style="surface")
         main_frame.pack(fill=BOTH, expand=True, padx=20, pady=20)
-
+        
+        # 创建设置内容
+        self._create_settings_content(main_frame, codehighlighter, codehighlighter2)
+    
+    def create_settings_in_frame(self, parent_frame, codehighlighter, codehighlighter2):
+        """
+        在指定框架中创建设置面板
+        
+        Args:
+            parent_frame: 父框架
+            codehighlighter: 代码高亮器
+            codehighlighter2: 终端高亮器
+        """
+        # 应用现代化样式
+        style = get_style()
+        apply_modern_style(parent_frame, "frame", style="surface")
+        
+        # 创建设置内容
+        self._create_settings_content(parent_frame, codehighlighter, codehighlighter2)
+    
+    def _create_settings_content(self, parent_frame, codehighlighter, codehighlighter2):
+        """
+        创建设置面板内容
+        
+        Args:
+            parent_frame: 父框架
+            codehighlighter: 代码高亮器
+            codehighlighter2: 终端高亮器
+        """
+        # 应用现代化样式
+        style = get_style()
+        
         # 创建搜索框
-        search_frame = Frame(main_frame)
+        search_frame = Frame(parent_frame)
         apply_modern_style(search_frame, "frame")
         search_frame.pack(fill=X, pady=(0, 15))
         

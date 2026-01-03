@@ -61,7 +61,7 @@ class App:
         # 创建主窗口
         logger.info("创建主窗口")
         self.root = MainWindow()
-        self.root.title("代码编辑器 - 修复模式")
+        self.root.title("Current Editor")
         self.root.configure(bg="lightgray")  # 设置背景色为浅灰色，便于调试
         
         # 打印主窗口属性
@@ -263,8 +263,7 @@ SQL query: SELECT * FROM users WHERE id = 12345;
             """
             窗口大小变化事件处理
             """
-            logger.info(f"窗口大小变化: {event.width}x{event.height}")
-            print(f"窗口大小变化: {event.width}x{event.height}")
+            # print(f"窗口大小变化: {event.width}x{event.height}")
         
         self.root.bind("<Configure>", on_resize)
         
@@ -287,7 +286,7 @@ if __name__ == "__main__":
     
     # 打印基本信息
     print("="*50)
-    print("代码编辑器 - 调试模式")
+    print("代码编辑器")
     print(f"Python路径: {sys.executable}")
     print(f"Python版本: {sys.version}")
     print(f"当前目录: {os.getcwd()}")
@@ -300,10 +299,12 @@ if __name__ == "__main__":
         import tkinter
         print(f"Tkinter版本: {tkinter.TkVersion}")
         root = tkinter.Tk()
-        root.title("Tkinter测试窗口")
+        root.title("Current Editor 正在启动...")
         root.geometry("400x300")
-        label = tkinter.Label(root, text="Tkinter测试", font=("Arial", 16))
-        label.pack(pady=50)
+        label = tkinter.Label(root, text="Current", font=("Arial", 16))
+        label.pack()
+        label = tkinter.Label(root, text="Build your code in current!", font=("Arial", 8))
+        label.pack()
         
         # 1秒后自动关闭测试窗口
         def close_test_window():

@@ -123,10 +123,7 @@ class MenuBar:
         """
         self.menu.add_command(
             label="帮助", 
-            command=lambda: messagebox.showinfo(
-                self.lang_dict["info-window-title"], 
-                self.lang_dict["help"]
-            )
+            command=lambda: self.app.multi_editor.show_help_tab(self.app)
         )
     
     def _create_settings_menu(self):
@@ -159,5 +156,9 @@ class MenuBar:
         codehighlighter_ref = getattr(self.app, 'codehighlighter', None)
         codehighlighter2_ref = getattr(self.app, 'codehighlighter2', None)
         
-        # 打开设置面板
-        self.app.editor_ops.open_settings_panel(codehighlighter_ref, codehighlighter2_ref)
+        # 在Tab中显示设置面板
+        self.app.multi_editor.show_settings_tab(
+            self.app, 
+            codehighlighter_ref, 
+            codehighlighter2_ref
+        )
