@@ -378,7 +378,7 @@ class ModernStyles:
 
 
 # 全局样式实例
-current_style = ModernStyles()
+current_style = ModernStyles("light")  # 默认使用浅色主题，便于调试
 
 
 def get_style():
@@ -406,7 +406,16 @@ def apply_modern_style(widget, widget_type, **kwargs):
         "treeview": style.apply_treeview_style,
         "labelframe": style.apply_label_frame_style,
         "menu": style.apply_menu_style,
+        "scrollbar": lambda widget, **kwargs: None,  # scrollbar组件不需要特殊样式，使用默认样式
     }
     
     if widget_type in style_methods:
-        style_methods[widget_type](widget, **kwargs)
+        try:
+            style_methods[widget_type](widget, **kwargs)
+        except Exception as e:
+            print(f"应用样式失败 ({widget_type}): {e}")
+            # 打印堆栈信息，便于调试
+            import traceback
+            traceback.print_exc()
+    else:
+        print(f"未知的组件类型: {widget_type}")
