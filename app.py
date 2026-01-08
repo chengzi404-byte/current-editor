@@ -7,7 +7,6 @@ from library.logger import get_logger, shutdown_logger
 from library.api import Settings
 from library.multi_file_editor import MultiFileEditor
 from library.editor_operations import EditorOperations
-from library.ui_styles import apply_modern_style, get_style
 from ui.main_window import MainWindow
 from ui.file_browser import FileBrowser
 from ui.menu import MenuBar
@@ -15,7 +14,7 @@ from pathlib import Path
 import os
 import json
 
-# -------------------- Global Variables --------------------
+
 logger = get_logger()
 highlighter_factory = HighlighterFactory()
 file_path = "temp_script.txt"
@@ -27,7 +26,7 @@ logger.info("程序启动")
 with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
 
-# Load language settings
+# 加载语言设置
 with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
     lang_dict = json.load(fp)
 
@@ -189,28 +188,7 @@ class App:
             else: 
                 self.codehighlighter2.set_theme(light_terminal_theme)
                 logger.info("使用浅色终端主题")
-            
-            # 添加测试日志内容以演示高亮
-            test_log_content = """2024-01-15 10:30:25 INFO [main] Starting application...
-2024-01-15 10:30:26 DEBUG [database] Connected to database at 192.168.1.100:5432
-2024-01-15 10:30:27 WARNING [config] Configuration file not found: /etc/app/config.json
-2024-01-15 10:30:28 ERROR [api] Failed to connect to API endpoint: https://api.example.com/v1
-2024-01-15 10:30:29 CRITICAL [system] Out of memory! Shutting down...
-Exception: MemoryError at line 45 in file /usr/local/bin/app.py
-Stack trace:
-  File "/usr/local/bin/app.py", line 45, in main
-    data = load_large_dataset("huge_file.csv")
-  File "/usr/local/bin/utils.py", line 123, in load_large_dataset
-    return pd.read_csv(filename)
-JSON data: {"status": "error", "message": "Memory allocation failed"}
-SQL query: SELECT * FROM users WHERE id = 12345;
-"""
-            self.root.terminal_area.insert("1.0", test_log_content)
-            
-            # 强制设置高亮器标签并立即执行高亮
-            self.codehighlighter2.setup_tags()
-            self.codehighlighter2.highlight()
-            
+
             def on_key(event):
                 # Process auto-save
                 self.editor_ops.autosave()
