@@ -8,6 +8,9 @@ import threading
 import requests
 from library.logger import get_logger
 
+# 导入国际化模块
+from i18n import t
+
 
 class AIService:
     """
@@ -71,12 +74,12 @@ class AIService:
                 ai_response = result["choices"][0]["message"]["content"]
                 self.ai_queue.put(ai_response)
             else:
-                error_msg = f"AI Error: {response.status_code}, {response.text}"
+                error_msg = f"{t('ai_error')}: {response.status_code}, {response.text}"
                 self.logger.error(error_msg)
                 self.ai_queue.put(error_msg)
                 
         except Exception as e:
-            error_msg = f"AI Responce Error: {str(e)}"
+            error_msg = f"{t('ai_response_error')}: {str(e)}"
             self.logger.error(error_msg)
             self.ai_queue.put(error_msg)
         finally:
@@ -110,9 +113,9 @@ class AIService:
         更新AI加载状态
         """
         if self.ai_loading and self.ai_send_button:
-            self.ai_send_button.config(text="发送中...", state="disabled")
+            self.ai_send_button.config(text=t("sending"), state="disabled")
         elif self.ai_send_button:
-            self.ai_send_button.config(text="发送", state="normal")
+            self.ai_send_button.config(text=t("send"), state="normal")
     
     def on_ai_input_enter(self, event):
         """
@@ -139,7 +142,7 @@ class AIService:
             
         current_time = time.strftime("%H:%M:%S")
         self.ai_display.config(state="normal")
-        self.ai_display.insert("end", f"用户 [{current_time}]:\n{prompt}\n\n")
+        self.ai_display.insert("end", f"{t('user')} [{current_time}]:\n{prompt}\n\n")
         self.ai_display.see("end")
         self.ai_display.config(state="disabled")
         

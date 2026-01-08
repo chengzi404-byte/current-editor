@@ -9,7 +9,7 @@ from library.ui_styles import apply_modern_style, get_style
 from library.api import Settings
 from pathlib import Path
 import json
-
+from i18n import t
 
 class MainWindow(Tk):
     """
@@ -23,12 +23,8 @@ class MainWindow(Tk):
         """
         super().__init__()
         
-        # 加载设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
-        
         # 设置窗口属性
-        self.title(self.lang_dict["title"])
+        self.title(t("title"))
         self.geometry("1200x800+0+0")  # 使用适中的默认尺寸
         self.resizable(width=True, height=True)
         

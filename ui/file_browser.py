@@ -7,7 +7,7 @@ from tkinter.ttk import Treeview, Scrollbar
 from library.ui_styles import apply_modern_style, get_style
 from pathlib import Path
 import os
-
+from i18n import t
 
 class FileBrowser:
     """
@@ -53,7 +53,7 @@ class FileBrowser:
         # 文件树标题
         self.file_tree_title = Label(
             self.file_tree_header, 
-            text="文件浏览器", 
+            text=t("file_browser.title"), 
             font=self.style.get_font("lg", "bold")
         )
         apply_modern_style(self.file_tree_title, "label")
@@ -62,7 +62,7 @@ class FileBrowser:
         # 添加刷新按钮
         self.refresh_button = Button(
             self.file_tree_header, 
-            text=f" {self.style.get_icon('refresh')} 刷新", 
+            text=f" {self.style.get_icon('refresh')} {t('file_browser.refresh')}", 
             font=self.style.get_font("sm"), 
             command=self.refresh_file_tree
         )
@@ -159,7 +159,7 @@ class FileBrowser:
             icon = "📁"
             node_id = self.tree.insert(parent, "end", text=f" {icon} {folder}", values=[folder_path])
             # 为文件夹添加一个空的子节点，实现展开效果
-            self.tree.insert(node_id, "end", text="加载中...")
+            self.tree.insert(node_id, "end", text=t("file_browser.loading"))
         
         # 再插入排序后的文件组
         for ext in sorted_extensions:
@@ -203,7 +203,7 @@ class FileBrowser:
         if item:
             # 检查是否已经有子节点
             children = self.tree.get_children(item)
-            if len(children) == 1 and self.tree.item(children[0])["text"] == "加载中...":
+            if len(children) == 1 and self.tree.item(children[0])["text"] == t("file_browser.loading"):
                 # 移除加载中的占位符
                 self.tree.delete(children[0])
                 

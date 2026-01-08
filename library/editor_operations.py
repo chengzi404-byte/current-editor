@@ -33,6 +33,9 @@ from operations.run_operations import RunOperations
 from operations.settings_manager import SettingsManager
 from operations.ai_service import AIService
 
+# 导入国际化模块
+from i18n import t
+
 logger = get_logger()
 
 
@@ -61,15 +64,11 @@ class EditorOperations:
             ai_loading: AI加载状态
             multi_editor: 多文件编辑器实例（可选）
         """
-        # 加载语言设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
-        
         # 初始化新的操作类
-        self.file_ops = FileOperations(codearea, multi_editor, self.lang_dict)
+        self.file_ops = FileOperations()
         self.edit_ops = EditOperations(codearea, printarea)
         self.run_ops = RunOperations(codearea, printarea, inputarea)
-        self.settings_manager = SettingsManager(root, codearea, printarea, self.lang_dict)
+        self.settings_manager = SettingsManager(root, codearea, printarea, t("settings"))
         self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
         
         # 保存旧的API需要的属性
@@ -181,23 +180,23 @@ class EditorOperations:
         """插件 > 下载插件"""
         try:
             plugin_path = filedialog.askopenfilename(
-                title="打开插件",
+                title=t("open_plugin"),  # 使用多语言适配
                 filetypes=[
-                    (self.lang_dict["plugin-types"][0], "*.zip"),
-                    (self.lang_dict["plugin-types"][1], "*.*")
+                    (t("plugin-types.0"), "*.zip"),  # 使用多语言适配
+                    (t("plugin-types.1"), "*.*")    # 使用多语言适配
                 ]
             )
             if plugin_path:
                 plugin_zip = zipfile.ZipFile(plugin_path, "r")
                 plugin_zip.extractall(f"{Path.cwd() / 'asset' / 'plugins'}")
                 plugin_zip.close()
-                messagebox.showinfo("Plugin", "Plugin installation successful, please restart the software")
+                messagebox.showinfo(t("plugin"), t("plugin_installation_successful"))  # 使用多语言适配
         except Exception as e:
-            messagebox.showerror("Error", f"Plugin installation failed: {str(e)}")
+            messagebox.showerror(t("error"), f"{t('plugin_installation_failed')}: {str(e)}")  # 使用多语言适配
     
     def exit_editor(self):
         """退出"""
-        if messagebox.askokcancel("Exit", "Are you sure you want to exit?"):
+        if messagebox.askokcancel(t("exit"), t("exit_confirmation")):  # 使用多语言适配
             self.root.destroy()
             sys.exit(0)
     
@@ -216,7 +215,7 @@ class EditorOperations:
             self.printarea.insert(END, stdout.decode(errors="replace"))  # 解码为字符串
             self.printarea.insert(END, stderr.decode(errors="replace"))  # 解码为字符串
         except Exception as e:
-            self.printarea.insert(END, f"执行命令时出错: {str(e)}\n")
+            self.printarea.insert(END, f"{t('execute_command_error')}: {str(e)}\n")  # 使用多语言适配
     
     def open_folder(self):
         """打开文件夹并更新文件树"""

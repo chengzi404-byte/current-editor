@@ -6,7 +6,7 @@ from tkinter import Menu, messagebox
 from library.api import Settings
 from pathlib import Path
 import json
-
+from i18n import t
 
 class MenuBar:
     """
@@ -24,10 +24,6 @@ class MenuBar:
         """
         self.root = root
         self.app = app
-        
-        # 加载语言设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
         
         # 创建主菜单
         self._create_main_menu()
@@ -65,64 +61,64 @@ class MenuBar:
         创建文件菜单
         """
         self.filemenu = Menu(tearoff=0)
-        self.menu.add_cascade(menu=self.filemenu, label=self.lang_dict["menus"]["file"])
-        self.filemenu.add_command(command=self.app.editor_ops.new_file, label=self.lang_dict["menus"]["new-file"])
-        self.filemenu.add_command(command=self.app.editor_ops.new_window, label=self.lang_dict["menus"]["new-window"])
+        self.menu.add_cascade(menu=self.filemenu, label=t("menus.file"))
+        self.filemenu.add_command(command=self.app.editor_ops.new_file, label=t("menus.new-file"))
+        self.filemenu.add_command(command=self.app.editor_ops.new_window, label=t("menus.new-window"))
         self.filemenu.add_separator()
-        self.filemenu.add_command(command=self.app.editor_ops.open_file, label=self.lang_dict["menus"]["open-file"])
-        self.filemenu.add_command(command=self.open_folder_global, label="打开文件夹")
-        self.filemenu.add_command(command=self.app.editor_ops.save_file, label=self.lang_dict["menus"]["save-file"])
-        self.filemenu.add_command(command=self.app.editor_ops.save_as_file, label=self.lang_dict["menus"]["save-as-file"])
+        self.filemenu.add_command(command=self.app.editor_ops.open_file, label=t("menus.open-file"))
+        self.filemenu.add_command(command=self.open_folder_global, label=t("menus.open-folder"))
+        self.filemenu.add_command(command=self.app.editor_ops.save_file, label=t("menus.save-file"))
+        self.filemenu.add_command(command=self.app.editor_ops.save_as_file, label=t("menus.save-as-file"))
         self.filemenu.add_separator()
-        self.filemenu.add_command(command=self.app.editor_ops.show_current_file_dir, label=self.lang_dict["menus"]["show-file-dir"])
+        self.filemenu.add_command(command=self.app.editor_ops.show_current_file_dir, label=t("menus.show-file-dir"))
         self.filemenu.add_separator()
-        self.filemenu.add_command(command=self.app.editor_ops.exit_editor, label=self.lang_dict["menus"]["exit"])
+        self.filemenu.add_command(command=self.app.editor_ops.exit_editor, label=t("menus.exit"))
     
     def _create_edit_menu(self):
         """
         创建编辑菜单
         """
         self.editmenu = Menu(tearoff=0)
-        self.menu.add_cascade(menu=self.editmenu, label=self.lang_dict["menus"]["edit"])
-        self.editmenu.add_command(command=self.app.editor_ops.undo, label=self.lang_dict["menus"]["undo"])
-        self.editmenu.add_command(command=self.app.editor_ops.redo, label=self.lang_dict["menus"]["redo"])
+        self.menu.add_cascade(menu=self.editmenu, label=t("menus.edit"))
+        self.editmenu.add_command(command=self.app.editor_ops.undo, label=t("menus.undo"))
+        self.editmenu.add_command(command=self.app.editor_ops.redo, label=t("menus.redo"))
         self.editmenu.add_separator()
-        self.editmenu.add_command(command=self.app.editor_ops.copy, label=self.lang_dict["menus"]["copy"])
-        self.editmenu.add_command(command=self.app.editor_ops.paste, label=self.lang_dict["menus"]["paste"])
-        self.editmenu.add_command(command=self.app.editor_ops.delete, label=self.lang_dict["menus"]["delete"])
+        self.editmenu.add_command(command=self.app.editor_ops.copy, label=t("menus.copy"))
+        self.editmenu.add_command(command=self.app.editor_ops.paste, label=t("menus.paste"))
+        self.editmenu.add_command(command=self.app.editor_ops.delete, label=t("menus.delete"))
     
     def _create_run_menu(self):
         """
         创建运行菜单
         """
         self.runmenu = Menu(tearoff=0)
-        self.menu.add_cascade(menu=self.runmenu, label=self.lang_dict["menus"]["run"])
-        self.runmenu.add_command(command=self.app.editor_ops.run, label=self.lang_dict["menus"]["run"])
-        self.runmenu.add_command(command=self.app.editor_ops.clear_printarea, label=self.lang_dict["menus"]["clear-output"])
+        self.menu.add_cascade(menu=self.runmenu, label=t("menus.run"))
+        self.runmenu.add_command(command=self.app.editor_ops.run, label=t("menus.run"))
+        self.runmenu.add_command(command=self.app.editor_ops.clear_printarea, label=t("menus.clear-output"))
     
     def _create_popup_menu(self):
         """
         创建右键菜单
         """
         self.popmenu = Menu(self.root, tearoff=0)
-        self.popmenu.add_command(label=self.lang_dict["menus"]["copy"], command=self.app.editor_ops.copy)
-        self.popmenu.add_command(label=self.lang_dict["menus"]["paste"], command=self.app.editor_ops.paste)
-        self.popmenu.add_command(label=self.lang_dict["menus"]["undo"], command=self.app.editor_ops.undo)
-        self.popmenu.add_command(label=self.lang_dict["menus"]["redo"], command=self.app.editor_ops.redo)
+        self.popmenu.add_command(label=t("menus.copy"), command=self.app.editor_ops.copy)
+        self.popmenu.add_command(label=t("menus.paste"), command=self.app.editor_ops.paste)
+        self.popmenu.add_command(label=t("menus.undo"), command=self.app.editor_ops.undo)
+        self.popmenu.add_command(label=t("menus.redo"), command=self.app.editor_ops.redo)
     
     def _create_plugin_menu(self):
         """
         创建插件菜单
         """
         self.pluginmenu = Menu(tearoff=0)
-        self.menu.add_cascade(menu=self.pluginmenu, label=self.lang_dict["menus"]["plugin"])
+        self.menu.add_cascade(menu=self.pluginmenu, label=t("menus.plugin"))
     
     def _create_help_menu(self):
         """
         创建帮助菜单
         """
         self.menu.add_command(
-            label="帮助", 
+            label=t("menus.help"), 
             command=lambda: self.app.multi_editor.show_help_tab(self.app)
         )
     
@@ -131,10 +127,10 @@ class MenuBar:
         创建设置菜单
         """
         self.settingsmenu = Menu(tearoff=0)
-        self.menu.add_cascade(menu=self.settingsmenu, label=self.lang_dict["menus"]["configure"])
+        self.menu.add_cascade(menu=self.settingsmenu, label=t("menus.configure"))
         # 设置菜单命令绑定
         self.settingsmenu.add_command(
-            label=self.lang_dict["menus"]["open-settings"], 
+            label=t("menus.open-settings"), 
             command=self.open_settings
         )
     

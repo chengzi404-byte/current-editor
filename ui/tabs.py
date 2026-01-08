@@ -13,6 +13,7 @@ from library.ui_styles import apply_modern_style, get_style
 from library.api import Settings
 from pathlib import Path
 import os
+from i18n import t
 
 
 class SettingsTab(Frame):
@@ -36,10 +37,6 @@ class SettingsTab(Frame):
         self.codehighlighter = codehighlighter
         self.codehighlighter2 = codehighlighter2
         
-        # 加载语言设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
-        
         # 应用样式
         self.style = get_style()
         apply_modern_style(self, "frame", style="surface")
@@ -55,7 +52,7 @@ class SettingsTab(Frame):
         self.pack(fill="both", expand=True, padx=20, pady=20)
         
         # 创建标题
-        title_label = Label(self, text=self.lang_dict["settings"]["title"], 
+        title_label = Label(self, text=t("settings.title"), 
                           font=self.style.get_font("xl", "bold"))
         apply_modern_style(title_label, "label", style="heading")
         title_label.pack(anchor="w", pady=(0, 20))
@@ -76,15 +73,15 @@ class SettingsTab(Frame):
         search_entry = Entry(search_frame, textvariable=search_var, font=self.style.get_font("base"))
         apply_modern_style(search_entry, "entry")
         search_entry.pack(fill="x", padx=5, pady=5)
-        search_entry.insert(0, "搜索设置...")
+        search_entry.insert(0, t("settings.search-placeholder"))
         
         def clear_search_placeholder(event):
-            if search_var.get() == "搜索设置...":
+            if search_var.get() == t("settings.search-placeholder"):
                 search_entry.delete(0, "end")
         
         def restore_search_placeholder(event):
             if not search_var.get():
-                search_entry.insert(0, "搜索设置...")
+                search_entry.insert(0, t("settings.search-placeholder"))
         
         search_entry.bind("<FocusIn>", clear_search_placeholder)
         search_entry.bind("<FocusOut>", restore_search_placeholder)
@@ -114,7 +111,7 @@ class SettingsTab(Frame):
             search_text = search_var.get().lower().strip()
             
             # 如果搜索框为空或为占位符，显示所有设置项
-            if not search_text or search_text == "搜索设置":
+            if not search_text or search_text == t("settings.search-placeholder"):
                 for item in settings_items:
                     item["frame"].pack(fill="x", padx=5, pady=5)
                 search_results_frame.pack_forget()
@@ -135,10 +132,10 @@ class SettingsTab(Frame):
             
             # 显示搜索结果信息
             if matched_items:
-                search_results_label.config(text=f"找到 {len(matched_items)} 个匹配的设置项")
+                search_results_label.config(text=t("settings.search-results", count=len(matched_items)))
                 search_results_frame.pack(fill="x", pady=(5, 0))
             else:
-                search_results_label.config(text="未找到匹配的设置项")
+                search_results_label.config(text=t("settings.no-results"))
                 search_results_frame.pack(fill="x", pady=(5, 0))
         
         # 绑定搜索事件
@@ -150,19 +147,19 @@ class SettingsTab(Frame):
 
         # 编辑器设置选项卡
         editor_frame = Frame(notebook)
-        notebook.add(editor_frame, text="编辑器")
+        notebook.add(editor_frame, text=t("settings.tab.editor"))
 
         # 外观设置选项卡
         appearance_frame = Frame(notebook)
-        notebook.add(appearance_frame, text="外观")
+        notebook.add(appearance_frame, text=t("settings.tab.appearance"))
 
         # 语言设置选项卡
         language_frame = Frame(notebook)
-        notebook.add(language_frame, text="语言")
+        notebook.add(language_frame, text=t("settings.tab.language"))
 
         # 高级设置选项卡
         advanced_frame = Frame(notebook)
-        notebook.add(advanced_frame, text="高级")
+        notebook.add(advanced_frame, text=t("settings.tab.advanced"))
 
         # 从library.api导入Settings
         from library.api import Settings
@@ -179,38 +176,38 @@ class SettingsTab(Frame):
         editor_scroll_frame.pack(fill="both", expand=True)
 
         # 字体设置
-        font_section = LabelFrame(editor_scroll_frame, text="字体设置", font=self.style.get_font("lg", "bold"))
+        font_section = LabelFrame(editor_scroll_frame, text=t("settings.section.font"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(font_section, "labelframe")
         font_section.pack(fill="x", padx=10, pady=10)
 
-        font_label = Label(font_section, text="字体:", font=self.style.get_font("sm"))
+        font_label = Label(font_section, text=t("settings.font.label"), font=self.style.get_font("sm"))
         apply_modern_style(font_label, "label")
         font_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         font_menu = OptionMenu(font_section, font_var, "Consolas", "Courier New", "Monaco", "Menlo", "Source Code Pro", "Fira Code")
         apply_modern_style(font_menu, "button", variant="outline")
         font_menu.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(font_section, "字体", font_menu, "编辑器", "设置代码编辑器的字体")
+        add_setting_item(font_section, t("settings.font.label"), font_menu, "editor", t("settings.font.description"))
 
-        fontsize_label = Label(font_section, text="字体大小:", font=self.style.get_font("sm"))
+        fontsize_label = Label(font_section, text=t("settings.font-size.label"), font=self.style.get_font("sm"))
         apply_modern_style(fontsize_label, "label")
         fontsize_label.grid(row=1, column=0, sticky="w", padx=15, pady=10)
         fontsize_spinbox = Spinbox(font_section, from_=8, to=24, textvariable=fontsize_var, width=10, font=self.style.get_font("sm"))
         apply_modern_style(fontsize_spinbox, "entry")
         fontsize_spinbox.grid(row=1, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(font_section, "字体大小", fontsize_spinbox, "编辑器", "设置代码编辑器的字体大小")
+        add_setting_item(font_section, t("settings.font-size.label"), fontsize_spinbox, "editor", t("settings.font-size.description"))
 
         # 编码设置
-        encoding_section = LabelFrame(editor_scroll_frame, text="编码设置", font=self.style.get_font("lg", "bold"))
+        encoding_section = LabelFrame(editor_scroll_frame, text=t("settings.section.encoding"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(encoding_section, "labelframe")
         encoding_section.pack(fill="x", padx=10, pady=10)
 
-        encoding_label = Label(encoding_section, text="文件编码:", font=self.style.get_font("sm"))
+        encoding_label = Label(encoding_section, text=t("settings.encoding.label"), font=self.style.get_font("sm"))
         apply_modern_style(encoding_label, "label")
         encoding_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         encoding_menu = OptionMenu(encoding_section, encoding_var, "UTF-8", "GBK", "ASCII", "UTF-16")
         apply_modern_style(encoding_menu, "button", variant="outline")
         encoding_menu.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(encoding_section, "文件编码", encoding_menu, "编辑器", "设置文件的默认编码")
+        add_setting_item(encoding_section, t("settings.encoding.label"), encoding_menu, "editor", t("settings.encoding.description"))
 
         # ========== 外观设置选项卡 ==========
         appearance_scroll_frame = Frame(appearance_frame)
@@ -218,31 +215,31 @@ class SettingsTab(Frame):
         appearance_scroll_frame.pack(fill="both", expand=True)
 
         # 主题设置
-        theme_section = LabelFrame(appearance_scroll_frame, text="主题设置", font=self.style.get_font("lg", "bold"))
+        theme_section = LabelFrame(appearance_scroll_frame, text=t("settings.section.theme"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(theme_section, "labelframe")
         theme_section.pack(fill="x", padx=10, pady=10)
 
-        theme_label = Label(theme_section, text="主题:", font=self.style.get_font("sm"))
+        theme_label = Label(theme_section, text=t("settings.theme.label"), font=self.style.get_font("sm"))
         apply_modern_style(theme_label, "label")
         theme_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         theme_menu = OptionMenu(theme_section, theme_var, "vscode-dark", "vscode-light", "github-dark", "github-light")
         apply_modern_style(theme_menu, "button", variant="outline")
         theme_menu.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(theme_section, "主题", theme_menu, "外观", "设置编辑器的主题")
+        add_setting_item(theme_section, t("settings.theme.label"), theme_menu, "appearance", t("settings.theme.description"))
 
         # 界面缩放设置
-        zoom_section = LabelFrame(appearance_scroll_frame, text="界面缩放", font=self.style.get_font("lg", "bold"))
+        zoom_section = LabelFrame(appearance_scroll_frame, text=t("settings.section.zoom"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(zoom_section, "labelframe")
         zoom_section.pack(fill="x", padx=10, pady=10)
 
         zoom_var = IntVar(value=100)
-        zoom_label = Label(zoom_section, text="缩放比例:", font=self.style.get_font("sm"))
+        zoom_label = Label(zoom_section, text=t("settings.zoom.label"), font=self.style.get_font("sm"))
         apply_modern_style(zoom_label, "label")
         zoom_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         zoom_spinbox = Spinbox(zoom_section, from_=50, to=200, textvariable=zoom_var, width=10, font=self.style.get_font("sm"))
         apply_modern_style(zoom_spinbox, "entry")
         zoom_spinbox.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(zoom_section, "缩放比例", zoom_spinbox, "外观", "设置界面缩放比例")
+        add_setting_item(zoom_section, t("settings.zoom.label"), zoom_spinbox, "appearance", t("settings.zoom.description"))
 
         # ========== 语言设置选项卡 ==========
         language_scroll_frame = Frame(language_frame)
@@ -250,25 +247,25 @@ class SettingsTab(Frame):
         language_scroll_frame.pack(fill="both", expand=True)
 
         # 界面语言设置
-        ui_language_section = LabelFrame(language_scroll_frame, text="界面语言", font=self.style.get_font("lg", "bold"))
+        ui_language_section = LabelFrame(language_scroll_frame, text=t("settings.section.interface-language"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(ui_language_section, "labelframe")
         ui_language_section.pack(fill="x", padx=10, pady=10)
 
         language_var = StringVar(value="zh-CN")
-        language_label = Label(ui_language_section, text="界面语言:", font=self.style.get_font("sm"))
+        language_label = Label(ui_language_section, text=t("settings.language.label"), font=self.style.get_font("sm"))
         apply_modern_style(language_label, "label")
         language_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         language_menu = OptionMenu(ui_language_section, language_var, "zh-CN", "en-US")
         apply_modern_style(language_menu, "button", variant="outline")
         language_menu.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(ui_language_section, "界面语言", language_menu, "语言", "设置编辑器界面语言")
+        add_setting_item(ui_language_section, t("settings.language.label"), language_menu, "language", t("settings.language.description"))
 
         # 代码语言支持
-        code_language_section = LabelFrame(language_scroll_frame, text="代码语言支持", font=self.style.get_font("lg", "bold"))
+        code_language_section = LabelFrame(language_scroll_frame, text=t("settings.section.code-languages"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(code_language_section, "labelframe")
         code_language_section.pack(fill="x", padx=10, pady=10)
 
-        code_language_label = Label(code_language_section, text="启用的语言:", font=self.style.get_font("sm"))
+        code_language_label = Label(code_language_section, text=t("settings.code-languages.label"), font=self.style.get_font("sm"))
         apply_modern_style(code_language_label, "label")
         code_language_label.grid(row=0, column=0, sticky="w", padx=15, pady=10, columnspan=2)
 
@@ -281,7 +278,7 @@ class SettingsTab(Frame):
             cb = Checkbutton(code_language_section, text=lang, variable=var, font=self.style.get_font("sm"))
             apply_modern_style(cb, "checkbutton")
             cb.grid(row=i//2+1, column=i%2, sticky="w", padx=15, pady=5)
-            add_setting_item(code_language_section, f"启用{lang}", cb, "语言", f"是否启用{lang}语言支持")
+            add_setting_item(code_language_section, t("settings.enable-language", lang=lang), cb, "language", t("settings.enable-language-desc", lang=lang))
 
         # ========== 高级设置选项卡 ==========
         advanced_scroll_frame = Frame(advanced_frame)
@@ -289,45 +286,45 @@ class SettingsTab(Frame):
         advanced_scroll_frame.pack(fill="both", expand=True)
 
         # 自动保存设置
-        autosave_section = LabelFrame(advanced_scroll_frame, text="自动保存", font=self.style.get_font("lg", "bold"))
+        autosave_section = LabelFrame(advanced_scroll_frame, text=t("settings.section.autosave"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(autosave_section, "labelframe")
         autosave_section.pack(fill="x", padx=10, pady=10)
 
         autosave_var = BooleanVar(value=True)
-        autosave_check = Checkbutton(autosave_section, text="启用自动保存", variable=autosave_var, font=self.style.get_font("sm"))
+        autosave_check = Checkbutton(autosave_section, text=t("settings.autosave.label"), variable=autosave_var, font=self.style.get_font("sm"))
         apply_modern_style(autosave_check, "checkbutton")
         autosave_check.grid(row=0, column=0, sticky="w", padx=15, pady=10, columnspan=2)
-        add_setting_item(autosave_section, "启用自动保存", autosave_check, "高级", "是否启用文件自动保存")
+        add_setting_item(autosave_section, t("settings.autosave.label"), autosave_check, "advanced", t("settings.autosave.description"))
 
         autosave_interval_var = IntVar(value=5)
-        autosave_interval_label = Label(autosave_section, text="自动保存间隔(秒):", font=self.style.get_font("sm"))
+        autosave_interval_label = Label(autosave_section, text=t("settings.autosave-interval.label"), font=self.style.get_font("sm"))
         apply_modern_style(autosave_interval_label, "label")
         autosave_interval_label.grid(row=1, column=0, sticky="w", padx=15, pady=10)
         autosave_interval_spinbox = Spinbox(autosave_section, from_=1, to=60, textvariable=autosave_interval_var, width=10, font=self.style.get_font("sm"))
         apply_modern_style(autosave_interval_spinbox, "entry")
         autosave_interval_spinbox.grid(row=1, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(autosave_section, "自动保存间隔", autosave_interval_spinbox, "高级", "设置自动保存的时间间隔")
+        add_setting_item(autosave_section, t("settings.autosave-interval.label"), autosave_interval_spinbox, "advanced", t("settings.autosave-interval.description"))
 
         # 日志设置
-        log_section = LabelFrame(advanced_scroll_frame, text="日志设置", font=self.style.get_font("lg", "bold"))
+        log_section = LabelFrame(advanced_scroll_frame, text=t("settings.section.logging"), font=self.style.get_font("lg", "bold"))
         apply_modern_style(log_section, "labelframe")
         log_section.pack(fill="x", padx=10, pady=10)
 
         log_level_var = StringVar(value="INFO")
-        log_level_label = Label(log_section, text="日志级别:", font=self.style.get_font("sm"))
+        log_level_label = Label(log_section, text=t("settings.log-level.label"), font=self.style.get_font("sm"))
         apply_modern_style(log_level_label, "label")
         log_level_label.grid(row=0, column=0, sticky="w", padx=15, pady=10)
         log_level_menu = OptionMenu(log_section, log_level_var, "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
         apply_modern_style(log_level_menu, "button", variant="outline")
         log_level_menu.grid(row=0, column=1, sticky="w", padx=15, pady=10)
-        add_setting_item(log_section, "日志级别", log_level_menu, "高级", "设置日志记录的级别")
+        add_setting_item(log_section, t("settings.log-level.label"), log_level_menu, "advanced", t("settings.log-level.description"))
 
         # ========== 保存设置按钮 ==========
         save_frame = Frame(self)
         apply_modern_style(save_frame, "frame")
         save_frame.pack(fill="x", padx=5, pady=20)
 
-        save_button = Button(save_frame, text="保存设置", font=self.style.get_font("md"))
+        save_button = Button(save_frame, text=t("settings.save-button"), font=self.style.get_font("md"))
         apply_modern_style(save_button, "button")
         save_button.pack(side="right", padx=5, pady=5)
         
@@ -370,7 +367,7 @@ class SettingsTab(Frame):
             
             # 显示保存成功消息
             from tkinter import messagebox
-            messagebox.showinfo("设置保存", "设置已成功保存！")
+            messagebox.showinfo(t("settings.save-title"), t("settings.save-message"))
         
         save_button.config(command=save_settings)
     
@@ -378,7 +375,7 @@ class SettingsTab(Frame):
         """
         获取Tab标题
         """
-        return self.lang_dict["settings"]["title"]
+        return t("settings.title")
     
     def refresh(self):
         """
@@ -405,10 +402,6 @@ class HelpTab(Frame):
         self.parent = parent
         self.app = app
         
-        # 加载语言设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
-        
         # 应用样式
         self.style = get_style()
         apply_modern_style(self, "frame", style="surface")
@@ -424,7 +417,7 @@ class HelpTab(Frame):
         self.pack(fill="both", expand=True, padx=20, pady=20)
         
         # 创建标题
-        title_label = Label(self, text="帮助中心", 
+        title_label = Label(self, text=t("help.title"), 
                           font=self.style.get_font("xl", "bold"))
         apply_modern_style(title_label, "label", style="heading")
         title_label.pack(anchor="w", pady=(0, 20))
@@ -447,19 +440,19 @@ class HelpTab(Frame):
         
         # 基本使用帮助选项卡
         basic_frame = Frame(notebook)
-        notebook.add(basic_frame, text="版本信息")
+        notebook.add(basic_frame, text=t("help.tab.about"))
         
         # 高级功能帮助选项卡
         advanced_frame = Frame(notebook)
-        notebook.add(advanced_frame, text="功能介绍")
+        notebook.add(advanced_frame, text=t("help.tab.features"))
         
         # 快捷键帮助选项卡
         shortcuts_frame = Frame(notebook)
-        notebook.add(shortcuts_frame, text="快捷键")
+        notebook.add(shortcuts_frame, text=t("help.tab.shortcuts"))
         
         # 故障排除帮助选项卡
         troubleshooting_frame = Frame(notebook)
-        notebook.add(troubleshooting_frame, text="故障排除")
+        notebook.add(troubleshooting_frame, text=t("help.tab.troubleshooting"))
         
         # ========== 版本信息 ==========
         basic_text = Text(basic_frame, wrap="word", font=self.style.get_font("base"))
@@ -469,10 +462,9 @@ class HelpTab(Frame):
         basic_scrollbar.pack(side="right", fill="y")
         basic_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-        basic_content = '版本信息\n\n'
-        basic_content += 'version: v0.1.1\n'
-        basic_content += '- 重构了编辑器的UI界面，使其更加现代化和用户友好\n'
-        basic_content += '- 将帮助页面、设置页面整合到了主窗口中\n'
+        basic_content = f'{t("help.about.title")}\n\n'
+        basic_content += f'version: v0.1.1\n'
+        basic_content += f'{t("help.about.description")}\n'
         
         basic_text.insert("1.0", basic_content)
         basic_text.config(state="disabled")
@@ -487,15 +479,15 @@ class HelpTab(Frame):
         advanced_scrollbar.pack(side="right", fill="y")
         advanced_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-        advanced_content = '功能介绍\n\n'
-        advanced_content += '- 代码高亮\n'
-        advanced_content += '- 主题设置\n'
-        advanced_content += '- 语法检查\n'
-        advanced_content += '- 代码格式化\n'
-        advanced_content += '- 代码补全\n'
-        advanced_content += '- 代码跳转\n'
-        advanced_content += '- 代码注释\n'
-        advanced_content += '- 代码折叠\n'
+        advanced_content = f'{t("help.features.title")}\n\n'
+        advanced_content += f'- {t("help.features.code-highlight")}\n'
+        advanced_content += f'- {t("help.features.theme-setting")}\n'
+        advanced_content += f'- {t("help.features.syntax-check")}\n'
+        advanced_content += f'- {t("help.features.code-format")}\n'
+        advanced_content += f'- {t("help.features.code-completion")}\n'
+        advanced_content += f'- {t("help.features.code-navigation")}\n'
+        advanced_content += f'- {t("help.features.code-comment")}\n'
+        advanced_content += f'- {t("help.features.code-folding")}\n'
         
         advanced_text.insert("1.0", advanced_content)
         advanced_text.config(state="disabled")
@@ -510,29 +502,29 @@ class HelpTab(Frame):
         shortcuts_scrollbar.pack(side="right", fill="y")
         shortcuts_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-        shortcuts_content = "# 快捷键\n\n"
-        shortcuts_content += "## 文件操作\n\n"
+        shortcuts_content = f"# {t('help.shortcuts.title')}\n\n"
+        shortcuts_content += f"## {t('help.shortcuts.file-operations')}\n\n"
         shortcuts_content += "| 操作 | 快捷键 |\n"
         shortcuts_content += "|------|--------|\n"
-        shortcuts_content += "| 新建文件 | Ctrl+N |\n"
-        shortcuts_content += "| 打开文件 | Ctrl+O |\n"
-        shortcuts_content += "| 保存文件 | Ctrl+S |\n"
-        shortcuts_content += "| 另存为 | Ctrl+Shift+S |\n\n"
+        shortcuts_content += f"| {t('menus.new-file')} | Ctrl+N |\n"
+        shortcuts_content += f"| {t('menus.open-file')} | Ctrl+O |\n"
+        shortcuts_content += f"| {t('menus.save-file')} | Ctrl+S |\n"
+        shortcuts_content += f"| {t('menus.save-as-file')} | Ctrl+Shift+S |\n\n"
         
-        shortcuts_content += "## 编辑操作\n\n"
+        shortcuts_content += f"## {t('help.shortcuts.edit-operations')}\n\n"
         shortcuts_content += "| 操作 | 快捷键 |\n"
         shortcuts_content += "|------|--------|\n"
-        shortcuts_content += "| 撤销 | Ctrl+Z |\n"
-        shortcuts_content += "| 重做 | Ctrl+Y |\n"
-        shortcuts_content += "| 复制 | Ctrl+C |\n"
-        shortcuts_content += "| 粘贴 | Ctrl+V |\n"
-        shortcuts_content += "| 删除 | Ctrl+X |\n\n"
+        shortcuts_content += f"| {t('menus.undo')} | Ctrl+Z |\n"
+        shortcuts_content += f"| {t('menus.redo')} | Ctrl+Y |\n"
+        shortcuts_content += f"| {t('menus.copy')} | Ctrl+C |\n"
+        shortcuts_content += f"| {t('menus.paste')} | Ctrl+V |\n"
+        shortcuts_content += f"| {t('menus.delete')} | Ctrl+X |\n\n"
         
-        shortcuts_content += "## 运行操作\n\n"
+        shortcuts_content += f"## {t('help.shortcuts.run-operations')}\n\n"
         shortcuts_content += "| 操作 | 快捷键 |\n"
         shortcuts_content += "|------|--------|\n"
-        shortcuts_content += "| 运行代码 | F5 |\n"
-        shortcuts_content += "| 清空输出 | Ctrl+L |\n\n"
+        shortcuts_content += f"| {t('menus.run')} | F5 |\n"
+        shortcuts_content += f"| {t('menus.clear-output')} | Ctrl+L |\n\n"
         
         shortcuts_text.insert("1.0", shortcuts_content)
         shortcuts_text.config(state="disabled")
@@ -547,21 +539,16 @@ class HelpTab(Frame):
         troubleshooting_scrollbar.pack(side="right", fill="y")
         troubleshooting_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-        troubleshooting_content = "# 故障排除\n\n"
-        troubleshooting_content += "## 1. 常见问题\n\n"
-        troubleshooting_content += "### 问题：编辑器无法启动\n"
-        troubleshooting_content += "解决方案：检查Python环境是否正确安装，确保所有依赖项已安装。\n\n"
+        troubleshooting_content = f"# {t('help.troubleshooting.title')}\n\n"
+        troubleshooting_content += f"## 1. {t('help.troubleshooting.common-issues')}\n\n"
+        troubleshooting_content += f"### {t('help.troubleshooting.issue-not-start-title')}\n"
+        troubleshooting_content += f"{t('help.troubleshooting.issue-not-start-desc')}\n\n"
         
-        troubleshooting_content += "### 问题：代码无法运行\n"
-        troubleshooting_content += "解决方案：\n"
-        troubleshooting_content += "1. 检查代码是否有语法错误\n"
-        troubleshooting_content += "2. 检查运行配置是否正确\n"
-        troubleshooting_content += "3. 查看输出窗口的错误信息\n\n"
+        troubleshooting_content += f"### {t('help.troubleshooting.issue-cannot-run-title')}\n"
+        troubleshooting_content += f"{t('help.troubleshooting.issue-cannot-run-desc')}\n\n"
         
-        troubleshooting_content += "### 问题：主题切换无效\n"
-        troubleshooting_content += "解决方案：\n"
-        troubleshooting_content += "1. 确保主题文件存在于asset/theme目录中\n"
-        troubleshooting_content += "2. 尝试重新启动编辑器\n\n"
+        troubleshooting_content += f"### {t('help.troubleshooting.issue-theme-title')}\n"
+        troubleshooting_content += f"{t('help.troubleshooting.issue-theme-desc')}\n\n"
         
         troubleshooting_text.insert("1.0", troubleshooting_content)
         troubleshooting_text.config(state="disabled")
@@ -572,7 +559,7 @@ class HelpTab(Frame):
         """
         获取Tab标题
         """
-        return "帮助"
+        return t("help.title")
     
     def refresh(self):
         """

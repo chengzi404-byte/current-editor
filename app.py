@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import json
 
+# 导入国际化模块
+from i18n import t
 
 logger = get_logger()
 highlighter_factory = HighlighterFactory()
@@ -25,15 +27,6 @@ logger.info("程序启动")
 # 加载设置
 with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
-
-# 加载语言设置
-with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-    lang_dict = json.load(fp)
-
-# 初始化目录
-from library import directory
-if not directory.test():
-    directory.initlaze()
 
 # 加载主题数据
 with open(f"{Path.cwd() / 'asset' / 'packages' / 'themes.dark.json'}", "r", encoding="utf-8") as fp:
@@ -60,20 +53,20 @@ class App:
         # 创建主窗口
         logger.info("创建主窗口")
         self.root = MainWindow()
-        self.root.title("Current Editor")
+        self.root.title(t("app_title"))  # 使用多语言适配
         self.root.configure(bg="lightgray")  # 设置背景色为浅灰色，便于调试
         
         # 打印主窗口属性
         logger.info(f"主窗口初始尺寸: {self.root.winfo_width()}x{self.root.winfo_height()}")
         logger.info(f"主窗口初始位置: {self.root.winfo_x()},{self.root.winfo_y()}")
         
-        # 创建文件浏览器
-        logger.info("创建文件浏览器")
-        self.file_browser = FileBrowser(self.root.file_tree_frame, self)
-        
-        # 创建多文件编辑器
+        # 创建多文件编辑器 - 需要在文件浏览器之前创建
         logger.info("创建多文件编辑器")
         self.multi_editor = MultiFileEditor(self.root.editor_frame, self.root.terminal_area, None, None)
+        
+        # 创建文件浏览器 - 现在可以安全访问multi_editor
+        logger.info("创建文件浏览器")
+        self.file_browser = FileBrowser(self.root.file_tree_frame, self)
         
         # 获取当前编辑器
         logger.info("获取当前编辑器")
@@ -117,7 +110,7 @@ class App:
         
         # 添加一个简单的测试文本到编辑器
         if self.codearea:
-            self.codearea.insert("1.0", "这是一个测试文本，用于验证编辑器是否正常工作")
+            self.codearea.insert("1.0", t("startup_test_text"))  # 使用多语言适配
         
         # 强制更新界面
         self.root.update_idletasks()
@@ -248,7 +241,7 @@ class App:
         # 启动主循环
         try:
             logger.info("启动主循环")
-            print("启动主循环")
+            print(t("starting_main_loop"))  # 使用多语言适配
             self.root.mainloop()
         except Exception as e:
             logger.error(f"程序主循环异常: {str(e)}")

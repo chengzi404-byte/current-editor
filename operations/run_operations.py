@@ -8,6 +8,9 @@ import sys
 import threading
 from library.api import Settings
 
+# 导入国际化模块
+from i18n import t
+
 
 class RunOperations:
     """
@@ -50,7 +53,7 @@ class RunOperations:
 
                 self.printarea.after(0, lambda: self._update_printarea(stdout, stderr))
             except Exception as e:
-                self.printarea.after(0, lambda: self.printarea.insert("end", f"执行错误: {str(e)}\n"))
+                self.printarea.after(0, lambda: self.printarea.insert("end", f"{t('execution_error')}: {str(e)}\n"))
         
         threading.Thread(target=execute_in_thread, daemon=True).start()
     
@@ -63,7 +66,7 @@ class RunOperations:
             stderr: 标准错误
         """
         self.printarea.delete(0.0, "end")
-        self.printarea.insert("end", f"%Run {Settings.Editor.file_path()}\n")
+        self.printarea.insert("end", f"{t('run_command_prefix')} {Settings.Editor.file_path()}\n")
         self.printarea.insert("end", f"------------------Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}------------------\n")
         self.printarea.insert("end", stdout.decode(errors="replace"))
         self.printarea.insert("end", stderr.decode(errors="replace"))

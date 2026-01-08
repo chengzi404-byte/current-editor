@@ -3,6 +3,9 @@
 处理复制、粘贴、撤销、重做等编辑操作
 """
 
+# 导入国际化模块
+from i18n import t
+
 
 class EditOperations:
     """
@@ -33,7 +36,8 @@ class EditOperations:
                 if self.printarea:
                     self.copy_msg = self.printarea.selection_get()
             except:
-                pass
+                # 多语言适配：当没有选中文本时的提示
+                print(t("no_text_selected_to_copy"))
     
     def paste(self):
         """
@@ -42,7 +46,8 @@ class EditOperations:
         try:
             self.codearea.insert("insert", self.copy_msg)
         except:
-            pass
+            # 多语言适配：粘贴失败时的提示
+            print(t("paste_operation_failed"))
     
     def delete(self):
         """
@@ -51,7 +56,8 @@ class EditOperations:
         try:
             self.codearea.delete("sel.first", "sel.last")
         except:
-            pass
+            # 多语言适配：没有选中文本时的提示
+            print(t("no_text_selected_to_delete"))
     
     def undo(self):
         """
@@ -60,7 +66,8 @@ class EditOperations:
         try:
             self.codearea.edit_undo()
         except:
-            pass
+            # 多语言适配：撤销失败时的提示
+            print(t("undo_operation_failed"))
     
     def redo(self):
         """
@@ -69,4 +76,5 @@ class EditOperations:
         try:
             self.codearea.edit_redo()
         except:
-            pass
+            # 多语言适配：重做失败时的提示
+            print(t("redo_operation_failed"))

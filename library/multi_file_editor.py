@@ -14,6 +14,9 @@ from library.logger import get_logger
 from library.api import Settings
 from ui.tabs import SettingsTab, HelpTab
 
+# 导入国际化模块
+from i18n import t
+
 logger = get_logger()
 
 
@@ -48,15 +51,11 @@ class MultiFileEditor:
         # 高亮器工厂
         self.highlighter_factory = HighlighterFactory()
         
-        # 加载语言设置
-        with open(Settings.Editor.langfile(), "r", encoding="utf-8") as fp:
-            self.lang_dict = json.load(fp)
-        
         # 绑定选项卡切换事件
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         
         # 创建初始选项卡
-        self.create_new_tab("Untitled", "")
+        self.create_new_tab(t("untitled"), "")
     
     def create_new_tab(self, title, content, file_path=None):
         """
