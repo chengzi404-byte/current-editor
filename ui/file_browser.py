@@ -128,6 +128,8 @@ class FileBrowser:
         
         for item in items:
             item_path = os.path.join(abs_path, item)
+            if item.startswith('.'):
+                continue
             if os.path.isdir(item_path):
                 folders.append(item)
             else:
