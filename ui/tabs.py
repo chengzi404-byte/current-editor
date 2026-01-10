@@ -5,14 +5,11 @@
 
 import json
 from tkinter import (Frame, Label, Button, Text, Scrollbar, Entry, StringVar, 
-                    IntVar, BooleanVar, OptionMenu, Checkbutton, Listbox, 
-                    Scale, Canvas, PhotoImage, LabelFrame, Spinbox) 
+                    IntVar, BooleanVar, OptionMenu, Checkbutton, LabelFrame, Spinbox) 
 from tkinter.font import Font
-from tkinter.ttk import Notebook, Combobox
+from tkinter.ttk import Notebook
 from library.ui_styles import apply_modern_style, get_style
-from library.api import Settings
 from pathlib import Path
-import os
 from i18n import t
 
 

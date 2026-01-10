@@ -2,13 +2,10 @@
 主窗口UI模块
 """
 
-from tkinter import (Tk, Frame, BOTH, VERTICAL, HORIZONTAL, Label, Button, Text)
-from tkinter.ttk import PanedWindow, Scrollbar, Treeview, Entry, Notebook
-from tkinter.font import Font
+from tkinter import (Tk, Frame, BOTH, VERTICAL, HORIZONTAL, Text)
+from tkinter.ttk import PanedWindow
 from library.ui_styles import apply_modern_style, get_style
 from library.api import Settings
-from pathlib import Path
-import json
 from i18n import t
 
 class MainWindow(Tk):

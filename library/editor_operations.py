@@ -5,28 +5,16 @@ Editor Operations Module
 注意：这是一个适配器类，用于将旧的API调用转发到新的操作类
 """
 
-import json
-import os
-import shutil
 import subprocess
 import sys
-import threading
-import time
 import zipfile
 import shlex
 from pathlib import Path
-from tkinter.font import Font
 from tkinter import (
-    NORMAL, END, DISABLED, W, X, E, BOTH, LEFT, RIGHT, TOP, BOTTOM,
-    Toplevel, StringVar, IntVar, BooleanVar, Label, Entry, Spinbox, OptionMenu, Button, Checkbutton, messagebox, filedialog,
-    Frame, LabelFrame
+    END, messagebox, filedialog
 )
-from tkinter.ttk import Notebook
-import requests
 
 from library.logger import get_logger
-from library.api import Settings
-from library.ui_styles import apply_modern_style, get_style
 from operations.file_operations import FileOperations
 from operations.edit_operations import EditOperations
 from operations.run_operations import RunOperations

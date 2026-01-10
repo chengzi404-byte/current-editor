@@ -1,11 +1,7 @@
 """
 菜单模块
 """
-
-from tkinter import Menu, messagebox
-from library.api import Settings
-from pathlib import Path
-import json
+from tkinter import Menu
 from i18n import t
 
 class MenuBar:

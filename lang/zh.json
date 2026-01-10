@@ -115,6 +115,7 @@
   "settings.code-languanges.label": "代码语言",
   "settings.search-placeholder": "搜索设置",
   "settings.save-button": "保存",
-  "file_browser.title": "文件浏览器"
+  "file_browser.title": "文件浏览器",
+  "file_browser.refresh": ""
 }
 

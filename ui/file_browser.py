@@ -2,10 +2,9 @@
 文件浏览器模块
 """
 
-from tkinter import Frame, Label, Button, LEFT, RIGHT, X, BOTH, Y
+from tkinter import Frame, Label, Button, LEFT, RIGHT, X, BOTH
 from tkinter.ttk import Treeview, Scrollbar
 from library.ui_styles import apply_modern_style, get_style
-from pathlib import Path
 import os
 from i18n import t
 
