@@ -17,7 +17,7 @@ from tkinter import (
 from library.logger import get_logger
 from operations.file_operations import FileOperations
 from operations.edit_operations import EditOperations
-from operations.run_operations import RunOperations
+from operations.terminal import TerminalOperations
 from operations.settings_manager import SettingsManager
 from operations.ai_service import AIService
 
@@ -55,7 +55,7 @@ class EditorOperations:
         # 初始化新的操作类
         self.file_ops = FileOperations()
         self.edit_ops = EditOperations(codearea, printarea)
-        self.run_ops = RunOperations(codearea, printarea, inputarea)
+        self.terminal_ops = TerminalOperations(printarea)
         self.settings_manager = SettingsManager(root, codearea, printarea, t("settings"))
         self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
         
@@ -93,7 +93,9 @@ class EditorOperations:
     
     def autosave(self):
         """文件 > 自动保存"""
-        self.file_ops.autosave()
+        # 自动保存功能，暂时为空实现
+        # 后续可以在这里添加实际的自动保存逻辑
+        pass
     
     def new_window(self):
         """文件 > 新建窗口"""
@@ -127,11 +129,15 @@ class EditorOperations:
     # -------------------- 运行操作 --------------------
     def run(self):
         """运行 > 运行Python文件"""
-        self.run_ops.run()
+        file_path = Settings.Editor.file_path()
+        input_data = None
+        if self.inputarea:
+            input_data = self.inputarea.get(0.0, "end")
+        self.terminal_ops.run_python_file(file_path, input_data)
     
     def clear_printarea(self):
         """运行 > 清除输出"""
-        self.run_ops.clear_printarea()
+        self.terminal_ops.clear_output()
     
     # -------------------- 设置操作 --------------------
     def open_settings_panel(self, codehighlighter, codehighlighter2):
@@ -191,19 +197,7 @@ class EditorOperations:
     def execute_commands(self):
         """在命令区域执行命令"""
         command = self.commandarea.get()
-        try:
-            args = shlex.split(command)
-            runtool = subprocess.Popen(args, stdin=subprocess.PIPE, 
-                                       stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-                                       shell=True)
-            
-            stdout, stderr = runtool.communicate()
-
-            self.printarea.delete(0.0, END)
-            self.printarea.insert(END, stdout.decode(errors="replace"))  # 解码为字符串
-            self.printarea.insert(END, stderr.decode(errors="replace"))  # 解码为字符串
-        except Exception as e:
-            self.printarea.insert(END, f"{t('execute_command_error')}: {str(e)}\n")  # 使用多语言适配
+        self.terminal_ops.execute_command(command)
     
     def open_folder(self):
         """打开文件夹并更新文件树"""

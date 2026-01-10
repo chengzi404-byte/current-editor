@@ -4,6 +4,6 @@
 
 from .file_operations import FileOperations
 from .edit_operations import EditOperations
-from .run_operations import RunOperations
+from .terminal import TerminalOperations
 from .settings_manager import SettingsManager
 from .ai_service import AIService

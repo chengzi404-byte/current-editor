@@ -269,21 +269,25 @@ if __name__ == "__main__":
     try:
         import tkinter
         print(f"Tkinter版本: {tkinter.TkVersion}")
-        root = tkinter.Tk()
-        root.title("Current Editor 正在启动...")
-        root.geometry("400x300")
-        label = tkinter.Label(root, text="Current", font=("Arial", 16))
+        
+        # 创建测试窗口
+        test_root = tkinter.Tk()
+        test_root.title("Current Editor 正在启动...")
+        test_root.geometry("400x300")
+        label = tkinter.Label(test_root, text="Current", font=("Arial", 16))
         label.pack()
-        label = tkinter.Label(root, text="Build your code in current!", font=("Arial", 8))
+        label = tkinter.Label(test_root, text="Build your code in current!", font=("Arial", 8))
         label.pack()
         
         # 1秒后自动关闭测试窗口
         def close_test_window():
-            root.destroy()
-            print("Tkinter测试窗口已关闭")
+            if test_root.winfo_exists():
+                test_root.destroy()
+                print("Tkinter测试窗口已关闭")
         
-        root.after(1000, close_test_window)
-        root.mainloop()
+        # 启动主循环
+        test_root.after(1000, close_test_window)
+        test_root.mainloop()
         print("Tkinter测试成功")
     except Exception as e:
         print(f"Tkinter测试失败: {str(e)}")

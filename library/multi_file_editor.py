@@ -12,6 +12,7 @@ from tkinter.ttk import Notebook, Frame
 from library.highlighter_factory import HighlighterFactory
 from library.logger import get_logger
 from library.api import Settings
+from library.static_checker.static_check_manager import StaticCheckManager
 from ui.tabs import SettingsTab, HelpTab
 
 # 导入国际化模块
@@ -50,6 +51,9 @@ class MultiFileEditor:
         
         # 高亮器工厂
         self.highlighter_factory = HighlighterFactory()
+        
+        # 静态代码检查管理器
+        self.static_check_manager = StaticCheckManager()
         
         # 绑定选项卡切换事件
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
@@ -102,6 +106,15 @@ class MultiFileEditor:
         # 切换到新选项卡
         self.notebook.select(tab_id)
         self.current_tab = tab_id
+        
+        # 注册编辑器到静态检查管理器
+        self.static_check_manager.register_editor(editor, file_path)
+        
+        # 绑定文本修改事件，实现实时静态检查
+        editor.bind('<<Modified>>', lambda e: self._on_text_modified(e, editor, file_path))
+        
+        # 初始静态检查
+        self._perform_static_check(editor, file_path)
         
         return tab_id
     
@@ -379,6 +392,37 @@ class MultiFileEditor:
                 highlighter.highlight()
             except Exception as e:
                 logger.warning(f"Failed to apply theme: {str(e)}")
+    
+    def _on_text_modified(self, event, editor, file_path):
+        """
+        文本修改事件处理函数
+        
+        Args:
+            event: 事件对象
+            editor: 编辑器组件
+            file_path: 文件路径
+        """
+        if editor.edit_modified():
+            editor.edit_modified(False)
+            # 执行静态代码检查
+            self._perform_static_check(editor, file_path)
+    
+    def _perform_static_check(self, editor, file_path):
+        """
+        执行静态代码检查
+        
+        Args:
+            editor: 编辑器组件
+            file_path: 文件路径
+        """
+        try:
+            # 获取当前代码内容
+            code = editor.get("1.0", "end-1c")
+            
+            # 执行静态代码检查
+            self.static_check_manager.check_code(code, file_path, editor)
+        except Exception as e:
+            logger.warning(f"静态代码检查失败: {str(e)}")
     
     def update_font_for_all(self, font_family, font_size):
         """更新所有编辑器的字体"""
