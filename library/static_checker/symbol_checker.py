@@ -80,7 +80,7 @@ class SymbolChecker(BaseStaticChecker):
     
     def _check_python_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
         """
-        检查Python代码的符号定义
+        检查Python代码的符号定义（使用flake8）
         
         Args:
             code: 要检查的Python代码
@@ -90,36 +90,144 @@ class SymbolChecker(BaseStaticChecker):
             检查到的错误列表
         """
         try:
-            print(f"Python代码检查开始，代码长度: {len(code)}")
-            # 解析Python代码生成AST
-            tree = ast.parse(code)
+            print(f"使用flake8检查Python代码，代码长度: {len(code)}")
             
-            # 构建符号表
-            self._build_python_symbol_table(tree)
-            print(f"符号表构建完成: {self.symbol_table}")
+            # 使用flake8进行代码检查
+            import subprocess
+            import tempfile
+            import os
             
-            # 检查符号引用
-            self._check_python_symbol_references(tree)
-            print(f"符号引用检查完成，错误数量: {len(self.errors)}")
+            # 将代码按行分割，用于准确计算结束位置
+            code_lines = code.split('\n')
             
-        except SyntaxError as e:
-            # 语法错误，添加到错误列表
-            print(f"语法错误: {str(e)}")
-            self._add_error(
-                line=e.lineno,
-                column=e.offset,
-                end_line=e.lineno,
-                end_column=e.offset + 1,
-                error_type="syntax-error",
-                error_message=str(e)
-            )
+            # 创建临时文件
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
+                f.write(code)
+                temp_file_path = f.name
+            
+            try:
+                # 运行flake8命令
+                result = subprocess.run(
+                    ["D:/ProgramData/anaconda3/python.exe", "-m", "flake8", 
+                     "--format", "%(row)d,%(col)d,%(code)s,%(text)s", 
+                     temp_file_path],
+                    capture_output=True,
+                    text=True
+                )
+                
+                print(f"flake8返回码: {result.returncode}")
+                print(f"flake8输出: {result.stdout}")
+                print(f"flake8错误: {result.stderr}")
+                
+                # 解析flake8输出
+                if result.stdout:
+                    for line in result.stdout.strip().split('\n'):
+                        if line.strip():
+                            self._parse_flake8_output(line, code_lines)
+                
+            finally:
+                # 删除临时文件
+                os.unlink(temp_file_path)
+                
+            print(f"flake8检查完成，错误数量: {len(self.errors)}")
+            
         except Exception as e:
             # 其他错误，记录但不影响检查
-            print(f"符号检查错误: {str(e)}")
+            print(f"flake8检查错误: {str(e)}")
             import traceback
             traceback.print_exc()
         
         return self.get_errors()
+    
+    def _parse_flake8_output(self, output_line: str, code_lines: list):
+        """
+        解析flake8输出行，转换为StaticCheckError对象
+        
+        Args:
+            output_line: flake8输出行
+        """
+        try:
+            # 解析输出行，格式: 行号,列号,错误码,错误信息
+            parts = output_line.split(',')
+            if len(parts) < 4:
+                return
+            
+            line = int(parts[0])
+            column = int(parts[1])
+            error_code = parts[2]
+            error_message = ','.join(parts[3:])
+            
+            # 根据错误码确定错误类型
+            if error_code.startswith('E'):
+                error_type = "error"
+                severity = "error"
+            elif error_code.startswith('W'):
+                error_type = "warning"
+                severity = "warning"
+            elif error_code.startswith('F'):
+                error_type = "warning"
+                severity = "warning"
+            elif error_code.startswith('C'):
+                error_type = "warning"
+                severity = "warning"
+            elif error_code.startswith('N'):
+                error_type = "warning"
+                severity = "warning"
+            else:
+                error_type = "lint-error"
+                severity = "warning"
+            
+            # 准确计算结束位置
+            end_line = line
+            end_column = column
+            
+            # 如果行号有效，尝试获取该行内容
+            if 1 <= line <= len(code_lines):
+                line_content = code_lines[line - 1]  # 列表索引从0开始
+                
+                # 根据错误类型确定结束位置
+                if error_code.startswith('E2') or error_code.startswith('E7'):  # 空格错误
+                    # 单个字符错误
+                    end_column = column + 1
+                elif error_code.startswith('E5'):  # 行太长
+                    # 整行错误
+                    end_column = len(line_content)
+                elif error_code.startswith('F'):  # 未使用的变量/导入
+                    # 尝试找到变量名的结束位置
+                    if column < len(line_content):
+                        # 从column位置开始，找到变量名的结束位置
+                        for i in range(column, len(line_content)):
+                            if not (line_content[i].isalnum() or line_content[i] == '_'):
+                                end_column = i
+                                break
+                        else:
+                            end_column = len(line_content)
+                else:
+                    # 默认处理：假设错误长度为1个字符
+                    end_column = column + 1
+            
+            # 确保结束位置不超过行尾
+            end_column = min(end_column, len(code_lines[line - 1])) if 1 <= line <= len(code_lines) else column + 1
+            
+            # 添加错误
+            self._add_error(
+                line=line,
+                column=column + 1,  # flake8使用0-based列索引，我们使用1-based
+                end_line=end_line,
+                end_column=end_column + 1,  # flake8使用0-based列索引，我们使用1-based
+                error_type=error_type,
+                error_message=f"{error_code}: {error_message}",
+                severity=severity
+            )
+            
+            print(f"错误位置: {line}:{column+1} 到 {end_line}:{end_column+1}")
+            
+            print(f"解析flake8错误: 行{line}, 列{column} - {error_code}: {error_message}")
+            
+        except Exception as e:
+            print(f"解析flake8输出错误: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     def _build_python_symbol_table(self, tree: ast.AST):
         """
