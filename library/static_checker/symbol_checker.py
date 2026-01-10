@@ -78,6 +78,37 @@ class SymbolChecker(BaseStaticChecker):
         
         return self.get_errors()
     
+    def __init__(self, language: str, editor_widget=None):
+        """
+        初始化符号定义检查器
+        
+        Args:
+            language: 支持的编程语言
+            editor_widget: 编辑器组件（可选）
+        """
+        super().__init__(language, editor_widget)
+        
+        # 符号表，用于存储标识符的定义信息
+        self.symbol_table: Dict[str, Dict] = {
+            "global": {
+                "variables": set(),
+                "functions": set(),
+                "classes": set()
+            },
+            "functions": {}
+        }
+        
+        # 支持的语言
+        self.supported_languages = [
+            "python", "javascript", "typescript", "java", "c", "cpp", 
+            "csharp", "go", "ruby", "php"
+        ]
+        
+        # flake8缓存机制
+        self._flake8_cache = {}
+        self._flake8_cache_timeout = 5  # 缓存超时时间（秒）
+        self._last_flake8_call = 0
+    
     def _check_python_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
         """
         检查Python代码的符号定义（使用flake8）
@@ -96,6 +127,19 @@ class SymbolChecker(BaseStaticChecker):
             import subprocess
             import tempfile
             import os
+            import time
+            
+            # 计算代码哈希，用于缓存
+            code_hash = hash(code)
+            current_time = time.time()
+            
+            # 检查缓存是否有效
+            if code_hash in self._flake8_cache and \
+               (current_time - self._flake8_cache[code_hash]['timestamp'] < self._flake8_cache_timeout):
+                print(f"使用缓存的flake8结果")
+                # 从缓存中获取错误
+                self.errors = self._flake8_cache[code_hash]['errors'].copy()
+                return self.get_errors()
             
             # 将代码按行分割，用于准确计算结束位置
             code_lines = code.split('\n')
@@ -112,7 +156,8 @@ class SymbolChecker(BaseStaticChecker):
                      "--format", "%(row)d,%(col)d,%(code)s,%(text)s", 
                      temp_file_path],
                     capture_output=True,
-                    text=True
+                    text=True,
+                    timeout=3  # 3秒超时，避免无限等待
                 )
                 
                 print(f"flake8返回码: {result.returncode}")
@@ -131,6 +176,22 @@ class SymbolChecker(BaseStaticChecker):
                 
             print(f"flake8检查完成，错误数量: {len(self.errors)}")
             
+            # 缓存结果
+            self._flake8_cache[code_hash] = {
+                'timestamp': current_time,
+                'errors': self.errors.copy()
+            }
+            
+            # 限制缓存大小
+            if len(self._flake8_cache) > 10:
+                # 移除最旧的缓存项
+                oldest_key = min(self._flake8_cache.keys(), 
+                               key=lambda k: self._flake8_cache[k]['timestamp'])
+                del self._flake8_cache[oldest_key]
+                print(f"移除最旧的flake8缓存项，当前缓存大小: {len(self._flake8_cache)}")
+            
+        except subprocess.TimeoutExpired:
+            print("flake8检查超时")
         except Exception as e:
             # 其他错误，记录但不影响检查
             print(f"flake8检查错误: {str(e)}")

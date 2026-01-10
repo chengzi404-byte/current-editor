@@ -55,6 +55,10 @@ class MultiFileEditor:
         # 静态代码检查管理器
         self.static_check_manager = StaticCheckManager()
         
+        # 防抖机制相关变量
+        self._debounce_timers = {}  # {editor_id: timer_id}
+        self._debounce_delay = 500  # 防抖延迟时间，单位为毫秒
+        
         # 绑定选项卡切换事件
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         
@@ -404,8 +408,29 @@ class MultiFileEditor:
         """
         if editor.edit_modified():
             editor.edit_modified(False)
-            # 执行静态代码检查
-            self._perform_static_check(editor, file_path)
+            # 执行防抖静态检查
+            self._debounce_static_check(editor, file_path)
+    
+    def _debounce_static_check(self, editor, file_path):
+        """
+        防抖静态代码检查
+        
+        Args:
+            editor: 编辑器组件
+            file_path: 文件路径
+        """
+        # 获取编辑器的唯一标识符
+        editor_id = id(editor)
+        
+        # 清除之前的定时器
+        if editor_id in self._debounce_timers:
+            self.parent.after_cancel(self._debounce_timers[editor_id])
+            del self._debounce_timers[editor_id]
+        
+        # 设置新的定时器
+        timer_id = self.parent.after(self._debounce_delay, 
+                                  lambda: self._perform_static_check(editor, file_path))
+        self._debounce_timers[editor_id] = timer_id
     
     def _perform_static_check(self, editor, file_path):
         """
@@ -423,6 +448,11 @@ class MultiFileEditor:
             self.static_check_manager.check_code(code, file_path, editor)
         except Exception as e:
             logger.warning(f"静态代码检查失败: {str(e)}")
+        finally:
+            # 清除当前编辑器的定时器记录
+            editor_id = id(editor)
+            if editor_id in self._debounce_timers:
+                del self._debounce_timers[editor_id]
     
     def update_font_for_all(self, font_family, font_size):
         """更新所有编辑器的字体"""

@@ -24,6 +24,47 @@ class StaticCheckManager:
         
         # 加载主题配置
         self._error_theme = self._load_error_theme()
+        
+        # 存储编辑器的提示窗口引用，用于清理
+        self._editor_tooltips = {}
+    
+    def unregister_editor(self, editor_widget):
+        """
+        从管理器中注销编辑器组件
+        
+        Args:
+            editor_widget: 编辑器组件
+        """
+        if editor_widget in self._editor_mappings:
+            del self._editor_mappings[editor_widget]
+        
+        # 清理编辑器相关的资源
+        self._cleanup_editor_resources(editor_widget)
+    
+    def _cleanup_editor_resources(self, editor_widget):
+        """
+        清理编辑器相关的资源
+        
+        Args:
+            editor_widget: 编辑器组件
+        """
+        try:
+            # 清理提示窗口
+            if hasattr(editor_widget, "_tooltip") and editor_widget._tooltip:
+                try:
+                    editor_widget._tooltip.destroy()
+                except Exception:
+                    pass
+                finally:
+                    editor_widget._tooltip = None
+            
+            # 清理错误标记
+            if hasattr(editor_widget, "tag_names"):
+                for tag in editor_widget.tag_names():
+                    if tag == "error" or tag == "warning" or tag.startswith("error_"):
+                        editor_widget.tag_remove(tag, "1.0", "end")
+        except Exception as e:
+            print(f"清理编辑器资源失败: {str(e)}")
     
     def _load_error_theme(self):
         """
@@ -164,13 +205,9 @@ class StaticCheckManager:
         """
         print(f"更新编辑器错误显示，错误数量: {len(errors)}")
         
-        # 清除之前的错误标记
-        self._clear_editor_errors(editor_widget)
-        
         # 简化的错误标记逻辑：直接使用最兼容的Tkinter标签配置
         try:
-            # 根据错误类型配置不同的标记样式
-            # 配置错误标记样式（使用主题颜色）
+            # 配置错误标记样式（使用主题颜色）- 只在首次配置或主题变化时需要
             editor_widget.tag_configure("error", 
                                        underline=True, 
                                        foreground=self._error_theme['error_color'],
@@ -181,7 +218,21 @@ class StaticCheckManager:
                                        underline=True, 
                                        foreground=self._error_theme['warning_color'])
             
-            # 添加错误标记
+            # 清除之前的自动生成的错误标签
+            for tag in editor_widget.tag_names():
+                if tag.startswith("error_"):
+                    editor_widget.tag_remove(tag, "1.0", "end")
+            
+            # 清除之前的错误和警告标记
+            editor_widget.tag_remove("error", "1.0", "end")
+            editor_widget.tag_remove("warning", "1.0", "end")
+            
+            # 只在有错误时添加标记，减少不必要的操作
+            if not errors:
+                print("没有错误需要标记")
+                return
+            
+            # 批量添加错误标记，减少UI重绘
             for i, error in enumerate(errors):
                 print(f"添加错误: {error.error_type} - {error.error_message}")
                 
@@ -194,6 +245,15 @@ class StaticCheckManager:
                 # 构建位置字符串
                 start_pos = f"{start_line}.{start_col}"
                 end_pos = f"{end_line}.{end_col}"
+                
+                # 跳过无效位置（可能是解析错误导致的）
+                try:
+                    # 验证位置是否有效
+                    editor_widget.index(start_pos)
+                    editor_widget.index(end_pos)
+                except Exception as pos_error:
+                    print(f"无效的错误位置: {start_pos} 到 {end_pos}, 跳过该错误")
+                    continue
                 
                 print(f"添加错误标记，位置: {start_pos} 到 {end_pos}")
                 
