@@ -1,11 +1,10 @@
-from .highlighter_factory import *
-from .highlighter import *
-from .logger import *
-from .validator import *
+"""
+Library package
+"""
 
-__all__ = [
-    "highlighter",
-    "api",
-    "logger",
-    "validator"
-]
+from .logger import get_logger, shutdown_logger
+from .highlighter_factory import HighlighterFactory
+from .api import Settings
+from .multi_file_editor import MultiFileEditor
+from .editor_operations import EditorOperations
+from .ui_styles import apply_modern_style, get_style
