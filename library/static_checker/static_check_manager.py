@@ -65,22 +65,31 @@ class StaticCheckManager:
         Returns:
             检查到的错误列表
         """
+        print(f"静态检查开始，文件路径: {file_path}, 代码长度: {len(code)}")
         # 根据文件路径获取语言
         language = self.checker_factory.get_language_from_file(file_path) if file_path else None
         
+        print(f"检测到的语言: {language}")
+        
+        # 如果无法从文件路径确定语言，使用默认语言Python进行检查
         if not language:
-            # 无法确定语言，返回空错误列表
-            return []
+            print("无法从文件路径确定语言，使用默认语言Python")
+            language = "python"
         
         # 创建对应的检查器
-        checkers = self.checker_factory.create_checkers_for_file(file_path, editor_widget)
+        checkers = self.checker_factory.create_checkers(language, editor_widget)
+        print(f"创建的检查器数量: {len(checkers)}, 检查器类型: {[type(c).__name__ for c in checkers]}")
         
         all_errors = []
         
         # 执行所有检查器
         for checker in checkers:
+            print(f"执行检查器: {type(checker).__name__}")
             errors = checker.check(code, file_path)
+            print(f"检查器返回的错误数量: {len(errors)}")
             all_errors.extend(errors)
+        
+        print(f"所有检查器完成，总错误数量: {len(all_errors)}")
         
         # 更新当前错误记录
         if file_path:
@@ -88,6 +97,7 @@ class StaticCheckManager:
         
         # 如果提供了编辑器组件，更新编辑器中的错误显示
         if editor_widget:
+            print(f"更新编辑器错误显示，错误数量: {len(all_errors)}")
             self._update_editor_errors(editor_widget, all_errors)
         
         return all_errors
@@ -100,12 +110,41 @@ class StaticCheckManager:
             editor_widget: 编辑器组件
             errors: 错误列表
         """
+        print(f"更新编辑器错误显示，错误数量: {len(errors)}")
+        
         # 清除之前的错误标记
         self._clear_editor_errors(editor_widget)
         
-        # 添加新的错误标记
-        for error in errors:
-            self._add_error_to_editor(editor_widget, error)
+        # 简化的错误标记逻辑：直接使用最兼容的Tkinter标签配置
+        try:
+            # 配置错误标记样式
+            editor_widget.tag_configure("error", 
+                                       underline=True, 
+                                       foreground="red")
+            
+            # 添加错误标记
+            for error in errors:
+                print(f"添加错误: {error.error_type} - {error.error_message}")
+                
+                # 计算位置
+                start_line = error.line
+                start_col = error.column - 1  # Tkinter使用0-based列索引
+                end_line = error.end_line
+                end_col = error.end_column - 1
+                
+                # 构建位置字符串
+                start_pos = f"{start_line}.{start_col}"
+                end_pos = f"{end_line}.{end_col}"
+                
+                print(f"添加错误标记，位置: {start_pos} 到 {end_pos}")
+                
+                # 直接添加标记
+                editor_widget.tag_add("error", start_pos, end_pos)
+                print("成功添加错误标记")
+        except Exception as e:
+            print(f"更新编辑器错误显示失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     def _clear_editor_errors(self, editor_widget):
         """
@@ -114,102 +153,19 @@ class StaticCheckManager:
         Args:
             editor_widget: 编辑器组件
         """
-        # 删除所有错误标记
-        editor_widget.tag_remove("static_check_error", "1.0", "end")
-        
-        # 删除所有自定义错误标记
-        for tag in editor_widget.tag_names():
-            if tag.startswith("error_"):
-                editor_widget.tag_remove(tag, "1.0", "end")
-    
-    def _add_error_to_editor(self, editor_widget, error: StaticCheckError):
-        """
-        向编辑器添加单个错误标记
-        
-        Args:
-            editor_widget: 编辑器组件
-            error: 错误信息
-        """
-        # 设置错误标记的样式：红色波浪线
-        editor_widget.tag_configure("static_check_error", 
-                                   underline=True, 
-                                   underlinefg="red",
-                                   background="#ffebee")
-        
-        # 添加悬停提示信息
-        editor_widget.tag_bind("static_check_error", "<Enter>", 
-                              lambda e, err=error: self._show_error_tooltip(e, err, editor_widget))
-        editor_widget.tag_bind("static_check_error", "<Leave>", 
-                              lambda e: self._hide_error_tooltip(e, editor_widget))
-        
-        # 计算错误位置
-        start_pos = f"{error.line}.{error.column - 1}"  # Tkinter使用0-based列索引
-        end_pos = f"{error.end_line}.{error.end_column - 1}"
-        
-        # 添加错误标记
-        editor_widget.tag_add("static_check_error", start_pos, end_pos)
-        
-        # 为每个错误创建唯一的标记，以便存储错误信息
-        error_tag = f"error_{len(errors)}_{start_pos.replace('.', '_')}"
-        editor_widget.tag_add(error_tag, start_pos, end_pos)
-        
-        # 绑定唯一标记的悬停事件
-        editor_widget.tag_bind(error_tag, "<Enter>", 
-                              lambda e, err=error: self._show_error_tooltip(e, err, editor_widget))
-        editor_widget.tag_bind(error_tag, "<Leave>", 
-                              lambda e: self._hide_error_tooltip(e, editor_widget))
-    
-    def _show_error_tooltip(self, event, error: StaticCheckError, editor_widget):
-        """
-        显示错误提示信息
-        
-        Args:
-            event: 事件对象
-            error: 错误信息
-            editor_widget: 编辑器组件
-        """
-        # 检查是否已经有提示窗口
-        if hasattr(editor_widget, "_error_tooltip") and editor_widget._error_tooltip:
-            return
-        
-        # 创建提示窗口
-        from tkinter import Toplevel, Label
-        
-        tooltip = Toplevel(editor_widget)
-        tooltip.wm_overrideredirect(True)  # 无边框
-        tooltip.wm_geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
-        
-        # 创建提示标签
-        message = f"{error.error_type}: {error.error_message}"
-        label = Label(tooltip, text=message, 
-                     background="#fff3cd", 
-                     foreground="#856404",
-                     borderwidth=1,
-                     relief="solid",
-                     font=editor_widget.cget("font"),
-                     padx=8,
-                     pady=4,
-                     justify="left")
-        label.pack()
-        
-        # 保存提示窗口引用
-        editor_widget._error_tooltip = tooltip
-    
-    def _hide_error_tooltip(self, event, editor_widget):
-        """
-        隐藏错误提示信息
-        
-        Args:
-            event: 事件对象
-            editor_widget: 编辑器组件
-        """
-        if hasattr(editor_widget, "_error_tooltip") and editor_widget._error_tooltip:
-            try:
-                editor_widget._error_tooltip.destroy()
-            except:
-                pass
-            finally:
-                editor_widget._error_tooltip = None
+        print("清除编辑器中的所有错误标记")
+        try:
+            # 清除错误标记
+            editor_widget.tag_remove("error", "1.0", "end")
+            
+            # 清除旧的标记名称（兼容旧代码）
+            editor_widget.tag_remove("static_check_error", "1.0", "end")
+            
+            print("成功清除错误标记")
+        except Exception as e:
+            print(f"清除编辑器错误标记失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     def get_current_errors(self, file_path: Optional[str] = None) -> List[StaticCheckError]:
         """

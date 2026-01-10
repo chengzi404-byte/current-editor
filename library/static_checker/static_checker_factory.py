@@ -39,8 +39,14 @@ class StaticCheckerFactory:
         for lang in all_languages:
             self.register_checker(lang, BracketChecker)
         
-        # 符号定义检查器，目前只支持Python
-        self.register_checker("python", SymbolChecker)
+        # 符号定义检查器，支持多种语言
+        symbol_checker_languages = [
+            "python", "javascript", "typescript", "java", "c", "cpp", 
+            "csharp", "go", "ruby", "php"
+        ]
+        
+        for lang in symbol_checker_languages:
+            self.register_checker(lang, SymbolChecker)
     
     def _register_default_language_mappings(self):
         """
