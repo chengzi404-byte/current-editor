@@ -24,6 +24,34 @@ file_path = "temp_script.txt"
 # 记录程序启动信息
 logger.info("程序启动")
 
+# 添加全局异常处理，确保崩溃时导出日志
+def handle_global_exception(exctype, value, traceback):
+    """全局异常处理函数"""
+    import traceback as tb_module
+    
+    # 记录异常信息
+    logger.exception("程序崩溃")
+    logger.error(f"异常类型: {exctype.__name__}")
+    logger.error(f"异常信息: {value}")
+    logger.error("堆栈跟踪:")
+    
+    # 导出崩溃日志
+    if hasattr(logger, 'export_crash_logs'):
+        # 确保normal_exit为False，这样崩溃日志会被导出
+        logger.normal_exit = False
+        logger.export_crash_logs()
+    
+    # 关闭日志记录器，明确指定这是异常退出
+    shutdown_logger(normal_exit=False)
+    
+    # 使用原始的异常处理方式
+    import sys
+    sys.__excepthook__(exctype, value, traceback)
+
+# 设置全局异常处理器
+import sys
+sys.excepthook = handle_global_exception
+
 # 加载设置
 with open(f"{Path.cwd() / 'asset' / 'settings.json'}", "r", encoding="utf-8") as fp:
     settings = json.load(fp)
@@ -246,7 +274,7 @@ class App:
         except Exception as e:
             logger.error(f"程序主循环异常: {str(e)}")
             print(f"程序主循环异常: {str(e)}")
-            shutdown_logger()
+            shutdown_logger(normal_exit=False)
 
 
 # 应用程序入口

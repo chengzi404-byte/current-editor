@@ -241,9 +241,20 @@ class AsyncLogHandler:
 class AsyncLogger:
     """异步日志记录器"""
     
-    def __init__(self, name='Phoenix Editor', log_dir="./logs", level=logging.DEBUG):
+    def __init__(self, name='Phoenix Editor', log_dir="./logs", level=logging.DEBUG, crash_only=False):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
+        
+        # 仅在崩溃时记录日志的标志
+        self.crash_only = crash_only
+        # 存储崩溃前的日志
+        self.crash_logs = []
+        # 正常模式下的日志级别
+        self.normal_level = level
+        # 崩溃模式下的日志级别
+        self.crash_level = logging.DEBUG
+        # 程序正常退出标志
+        self.normal_exit = False
         
         # 移除所有现有的处理器
         for handler in self.logger.handlers[:]:
@@ -254,14 +265,20 @@ class AsyncLogger:
         
         # 添加自定义处理器来捕获日志记录
         class CustomHandler(logging.Handler):
-            def __init__(self, async_handler):
+            def __init__(self, async_handler, parent_logger):
                 super().__init__()
                 self.async_handler = async_handler
+                self.parent_logger = parent_logger
             
             def emit(self, record):
-                self.async_handler.enqueue_log(record)
+                if self.parent_logger.crash_only:
+                    # 仅在崩溃时记录日志，先存储到内存中
+                    self.parent_logger.crash_logs.append(record)
+                else:
+                    # 正常模式，直接写入日志文件
+                    self.async_handler.enqueue_log(record)
         
-        self.logger.addHandler(CustomHandler(self.async_handler))
+        self.logger.addHandler(CustomHandler(self.async_handler, self))
         
     def _make_log_record(self, level, msg, *args, **kwargs):
         """创建日志记录"""
@@ -295,13 +312,33 @@ class AsyncLogger:
         """记录异常信息"""
         self.logger.exception(msg, *args, **kwargs)
     
-    def shutdown(self):
+    def export_crash_logs(self):
+        """导出崩溃日志到文件"""
+        if self.crash_only and self.crash_logs and not self.normal_exit:
+            print("程序崩溃，导出崩溃日志...")
+            # 将内存中的日志写入文件
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+            )
+            
+            for record in self.crash_logs:
+                self.async_handler.enqueue_log(record)
+            
+            # 清空崩溃日志
+            self.crash_logs = []
+    
+    def shutdown(self, normal_exit=True):
         """关闭日志记录器"""
+        # 设置退出类型
+        self.normal_exit = normal_exit
+        
+        # 如果是仅崩溃模式且有日志，导出它们
+        self.export_crash_logs()
         self.async_handler.shutdown()
 
-def setup_logger(log_dir="./logs", name='Phoenix Editor', level=logging.DEBUG):
+def setup_logger(log_dir="./logs", name='Phoenix Editor', level=logging.DEBUG, crash_only=False):
     """设置异步日志记录器"""
-    return AsyncLogger(name, log_dir, level)
+    return AsyncLogger(name, log_dir, level, crash_only)
 
 # 全局日志记录器实例
 _global_logger = None
@@ -310,12 +347,13 @@ def get_logger():
     """获取全局日志记录器"""
     global _global_logger
     if _global_logger is None:
-        _global_logger = setup_logger()
+        # 默认仅在崩溃时记录日志
+        _global_logger = setup_logger(crash_only=True)
     return _global_logger
 
-def shutdown_logger():
+def shutdown_logger(normal_exit=True):
     """关闭全局日志记录器"""
     global _global_logger
     if _global_logger:
-        _global_logger.shutdown()
+        _global_logger.shutdown(normal_exit)
         _global_logger = None
