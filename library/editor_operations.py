@@ -19,7 +19,8 @@ from operations.file_operations import FileOperations
 from operations.edit_operations import EditOperations
 from operations.terminal import TerminalOperations
 from operations.settings_manager import SettingsManager
-from operations.ai_service import AIService
+# from operations.ai_service import AIService
+import os
 
 # 导入国际化模块
 from i18n import t
@@ -34,8 +35,7 @@ class EditorOperations:
     注意：这是一个适配器类，用于将旧的API调用转发到新的操作类
     """
     
-    def __init__(self, root, codearea, printarea, inputarea, commandarea, 
-                 ai_display, ai_input, ai_send_button, ai_queue, ai_loading, multi_editor=None):
+    def __init__(self, root, codearea, commandarea, multi_editor=None):
         """
         初始化编辑器操作
         
@@ -54,22 +54,20 @@ class EditorOperations:
         """
         # 初始化新的操作类
         self.file_ops = FileOperations()
-        self.edit_ops = EditOperations(codearea, printarea)
-        self.terminal_ops = TerminalOperations(printarea)
-        self.settings_manager = SettingsManager(root, codearea, printarea, t("settings"))
-        self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
+        self.edit_ops = EditOperations(codearea, commandarea)
+        self.terminal_ops = TerminalOperations(commandarea)
+        self.settings_manager = SettingsManager(root, codearea, commandarea, t("settings"))
+#       self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
         
         # 保存旧的API需要的属性
         self.root = root
         self.codearea = codearea
-        self.printarea = printarea
-        self.inputarea = inputarea
         self.commandarea = commandarea
-        self.ai_display = ai_display
-        self.ai_input = ai_input
-        self.ai_send_button = ai_send_button
-        self.ai_queue = ai_queue
-        self.ai_loading = ai_loading
+        # self.ai_display = ai_display
+        # self.ai_input = ai_input
+        # self.ai_send_button = ai_send_button
+        # self.ai_queue = ai_queue
+        # self.ai_loading = ai_loading
         self.multi_editor = multi_editor
         self.file_path = "temp_script.txt"
         self.copy_msg = ""
@@ -223,3 +221,59 @@ class EditorOperations:
                     _populate_subdirectories(tree, item_path, node_id)
         
         _populate_subdirectories(self.root.file_tree, path)
+
+    def open_file(self, text_widget):
+        """
+        打开文件并读取内容
+        """
+        file_path = filedialog.askopenfilename(title=t("open_file"), filetypes=[(t("all_files"), "*.*")])
+        if not file_path:
+            return None
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                text_widget.delete('1.0', 'end')
+                text_widget.insert('1.0', content)
+                self.current_file_path = file_path  # 更新当前文件路径
+            self.multi_editor.get_notebook().tab(self.multi_editor.get_current_tab(), text=os.path.basename(file_path))
+            self.root.title(f"{os.path.basename(file_path)} - {t('editor_title')}") # 更新窗口标题
+        except Exception as e:
+            print("Trying to open file but Got exception: ", str(e))
+
+    def save_as_file(self, text_widget):
+        """
+        保存文件为...
+        """
+        file_path = filedialog.asksaveasfilename(title=t("save_file"), filetypes=[(t("all_files"), "*.*")])
+        if not file_path:
+            return None
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                content = text_widget.get('1.0', 'end')
+                file.write(content)
+        except Exception as e:
+            print("Trying to save file but Got exception: ", str(e))
+
+    def save_file(self, text_widget):
+        """
+        保存文件
+        """
+        if not self.current_file_path:
+            self.save_as_file(text_widget)
+            return
+        
+        try:
+            with open(self.current_file_path, 'w', encoding='utf-8') as file:
+                content = text_widget.get('1.0', 'end')
+                file.write(content)
+        except Exception as e:
+            print("Trying to save file but Got exception: ", str(e))
+
+    @property
+    def text_widget(self):
+        """
+        获取当前文本小部件
+        """
+        return self.codearea

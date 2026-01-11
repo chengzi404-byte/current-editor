@@ -135,6 +135,11 @@ class MultiFileEditor:
         # 如果没有任何选项卡，创建一个新的
         self.create_new_tab("Untitled", "")
         return self.tab_editors[self.current_tab]
+
+    def get_current_tab(self): 
+        """获取当前活动的选项卡组件对象""" 
+        current_tab_id = self.notebook.select()  # 获取当前选中标签页的 ID
+        return self.notebook.nametowidget(current_tab_id)  # 转换为组件对象
     
     def get_current_file_path(self):
         """获取当前活动文件的路径"""
@@ -147,6 +152,10 @@ class MultiFileEditor:
         if self.current_tab and self.current_tab in self.tab_highlighters:
             return self.tab_highlighters[self.current_tab]
         return None
+
+    def get_notebook(self):
+        """获取Notebook组件对象"""
+        return self.notebook
     
     def on_tab_changed(self, event):
         """选项卡切换事件处理"""

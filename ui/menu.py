@@ -61,7 +61,7 @@ class MenuBar:
         self.filemenu.add_command(command=self.app.editor_ops.new_file, label=t("menus.new-file"))
         self.filemenu.add_command(command=self.app.editor_ops.new_window, label=t("menus.new-window"))
         self.filemenu.add_separator()
-        self.filemenu.add_command(command=self.app.editor_ops.open_file, label=t("menus.open-file"))
+        self.filemenu.add_command(command=lambda: self.app.editor_ops.open_file(self.app.editor_ops.text_widget), label=t("menus.open-file"))
         self.filemenu.add_command(command=self.open_folder_global, label=t("menus.open-folder"))
         self.filemenu.add_command(command=self.app.editor_ops.save_file, label=t("menus.save-file"))
         self.filemenu.add_command(command=self.app.editor_ops.save_as_file, label=t("menus.save-as-file"))
