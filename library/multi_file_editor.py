@@ -6,19 +6,23 @@
 import json
 import os
 from pathlib import Path
-from tkinter import Text, messagebox, BOTH
+from tkinter import Text, messagebox, BOTH, Frame, Label, Button, Event
 from tkinter.font import Font
-from tkinter.ttk import Notebook, Frame
+from tkinter.ttk import Notebook
 from library.highlighter_factory import HighlighterFactory
 from library.logger import get_logger
 from library.api import Settings
 from library.static_checker.static_check_manager import StaticCheckManager
 from ui.tabs import SettingsTab, HelpTab
+from library.ui_styles import get_style
 
 # 导入国际化模块
 from i18n import t
 
 logger = get_logger()
+
+
+
 
 
 class MultiFileEditor:
@@ -40,8 +44,12 @@ class MultiFileEditor:
         self.commandarea = commandarea
         
         # 创建选项卡控件
-        self.notebook = Notebook(parent)
+        self.notebook = Notebook(parent, style="ModernNotebook.TNotebook")
         self.notebook.pack(fill=BOTH, expand=True)
+        
+        # 应用Notebook样式
+        from library.ui_styles import apply_modern_style
+        apply_modern_style(self.notebook, "notebook")
         
         # 文件标签映射
         self.tab_files = {}  # {tab_id: file_path}
@@ -61,6 +69,12 @@ class MultiFileEditor:
         
         # 绑定选项卡切换事件
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
+        
+        # 绑定鼠标右键事件，用于显示关闭选项
+        self.notebook.bind("<Button-3>", self.on_tab_right_click)
+        
+        # 绑定鼠标左键事件，用于处理关闭按钮点击
+        self.notebook.bind("<Button-1>", self.on_tab_left_click)
         
         # 创建初始选项卡
         self.create_new_tab(t("untitled"), "")
@@ -85,8 +99,8 @@ class MultiFileEditor:
         # 插入初始内容
         editor.insert("1.0", content)
         
-        # 添加选项卡
-        tab_id = self.notebook.add(tab_frame, text=title)
+        # 添加选项卡，标题中包含关闭按钮指示
+        tab_id = self.notebook.add(tab_frame, text=f"{title}    ✕")
         
         # 创建语法高亮器
         highlighter = self.highlighter_factory.create_highlighter(editor, file_path)
@@ -121,6 +135,160 @@ class MultiFileEditor:
         self._perform_static_check(editor, file_path)
         
         return tab_id
+    
+    def close_tab(self, tab_id):
+        """
+        关闭指定的选项卡
+        
+        Args:
+            tab_id: 要关闭的选项卡ID
+        """
+        # 检查是否为有效的选项卡ID
+        if tab_id not in self.notebook.tabs():
+            return
+        
+        # 检查是否有未保存的更改
+        if tab_id in self.tab_editors:
+            editor = self.tab_editors[tab_id]
+            # 检查是否为编辑类Tab
+            if editor is not None:
+                # 获取当前Tab的内容
+                current_content = editor.get("1.0", "end-1c")
+                file_path = self.tab_files.get(tab_id)
+                
+                # 检查是否有未保存的更改
+                if file_path and os.path.exists(file_path):
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        saved_content = f.read()
+                    if current_content != saved_content:
+                        # 提示用户保存更改
+                        result = messagebox.askyesnocancel(
+                            "提示",
+                            "文件有未保存的更改，是否保存？"
+                        )
+                        
+                        if result is None:  # 取消
+                            return
+                        elif result:  # 是，保存
+                            if not self.save_current_file():
+                                return
+                elif current_content.strip():
+                    # 新文件，如果有内容则提示保存
+                    result = messagebox.askyesnocancel(
+                        "提示",
+                        "文件有未保存的更改，是否保存？"
+                    )
+                    
+                    if result is None:  # 取消
+                        return
+                    elif result:  # 是，保存
+                        if not self.save_current_file():
+                            return
+        
+        # 移除选项卡
+        self.notebook.forget(tab_id)
+        
+        # 释放资源
+        if tab_id in self.tab_editors:
+            editor = self.tab_editors[tab_id]
+            if editor is not None:
+                editor.destroy()
+            del self.tab_editors[tab_id]
+        
+        if tab_id in self.tab_highlighters:
+            del self.tab_highlighters[tab_id]
+        
+        if tab_id in self.tab_files:
+            del self.tab_files[tab_id]
+        
+        # 更新当前Tab
+        if self.current_tab == tab_id:
+            self.current_tab = None
+            # 获取剩余的Tab
+            remaining_tabs = self.notebook.tabs()
+            if remaining_tabs:
+                self.current_tab = remaining_tabs[0]
+                self.notebook.select(self.current_tab)
+    
+    def on_tab_right_click(self, event):
+        """
+        处理Tab右键点击事件，显示关闭选项菜单
+        
+        Args:
+            event: 事件对象
+        """
+        from tkinter import Menu
+        
+        # 获取点击位置对应的Tab
+        tab_id = self.notebook.identify(event.x, event.y)
+        if not tab_id or tab_id == "label":
+            # 如果点击的是标签文本，尝试获取当前选中的Tab
+            tab_id = self.notebook.select()
+            if not tab_id:
+                return
+        
+        # 创建右键菜单
+        menu = Menu(self.notebook, tearoff=0)
+        menu.add_command(label="关闭标签页", command=lambda: self.close_tab(tab_id))
+        menu.add_command(label="关闭其他标签页", command=lambda: self.close_other_tabs(tab_id))
+        menu.add_command(label="关闭所有标签页", command=self.close_all_tabs)
+        
+        # 显示菜单
+        menu.post(event.x_root, event.y_root)
+    
+    def on_tab_left_click(self, event):
+        """
+        处理Tab左键点击事件，用于检测是否点击了关闭按钮
+        
+        Args:
+            event: 事件对象
+        """
+        # 获取点击位置对应的Tab
+        tab_id = self.notebook.identify(event.x, event.y)
+        if not tab_id:
+            return
+        
+        # 如果点击的是标签文本，获取当前选中的Tab
+        if tab_id == "label":
+            tab_id = self.notebook.select()
+            if not tab_id:
+                return
+        
+        # 获取Tab的边界框
+        tab_bbox = self.notebook.bbox(tab_id)
+        if not tab_bbox:
+            return
+        
+        # 检查点击位置是否在Tab的右侧（关闭按钮区域）
+        # 我们假设关闭按钮位于Tab右侧的25像素区域
+        x, y, width, height = tab_bbox
+        if event.x > x + width - 25:
+            # 点击了关闭按钮区域
+            self.close_tab(tab_id)
+    
+    def close_other_tabs(self, keep_tab_id):
+        """
+        关闭除指定Tab外的所有Tab
+        
+        Args:
+            keep_tab_id: 要保留的Tab ID
+        """
+        tabs_to_close = [tab_id for tab_id in self.notebook.tabs() if tab_id != keep_tab_id]
+        for tab_id in tabs_to_close:
+            self.close_tab(tab_id)
+    
+    def close_all_tabs(self):
+        """
+        关闭所有Tab，保留一个空Tab
+        """
+        # 关闭所有Tab
+        tabs_to_close = self.notebook.tabs()
+        for tab_id in tabs_to_close:
+            self.close_tab(tab_id)
+        
+        # 如果没有Tab了，创建一个新的空Tab
+        if not self.notebook.tabs():
+            self.create_new_tab(t("untitled"), "")
     
     def get_current_editor(self):
         """获取当前活动的编辑器"""
@@ -176,11 +344,8 @@ class MultiFileEditor:
         if not self.current_tab:
             return
         
-        # 检查是否有未保存的更改
-        editor = self.get_current_editor()
-        if editor and self.has_unsaved_changes():
-            if not self.prompt_save_changes():
-                return  # 用户取消关闭
+        # 调用close_tab方法关闭当前选项卡
+        self.close_tab(self.current_tab)
     
     def show_settings_tab(self, app, codehighlighter, codehighlighter2):
         """
@@ -208,8 +373,8 @@ class MultiFileEditor:
         # 获取Tab标题
         tab_title = settings_tab.get_title()
         
-        # 添加到Notebook
-        tab_id = self.notebook.add(tab_frame, text=tab_title)
+        # 添加到Notebook，标题中包含关闭按钮指示
+        tab_id = self.notebook.add(tab_frame, text=f"{tab_title}    ✕")
         
         # 保存引用
         self.tab_files[tab_id] = "__settings__"
@@ -244,8 +409,8 @@ class MultiFileEditor:
         # 获取Tab标题
         tab_title = help_tab.get_title()
         
-        # 添加到Notebook
-        tab_id = self.notebook.add(tab_frame, text=tab_title)
+        # 添加到Notebook，标题中包含关闭按钮指示
+        tab_id = self.notebook.add(tab_frame, text=f"{tab_title}    ✕")
         
         # 保存引用
         self.tab_files[tab_id] = "__help__"

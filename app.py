@@ -11,11 +11,25 @@ from ui.main_window import MainWindow
 from ui.file_browser import FileBrowser
 from ui.menu import MenuBar
 from pathlib import Path
+from tkinter import messagebox
+
 import os
 import json
 
 # 导入国际化模块
 from i18n import t
+
+from library.py_executable_check import is_conda
+
+# 检查是否是支持的系统类型
+import platform
+if platform.system() not in ["Windows"]:
+    messagebox.showwarning("警告", "当前系统不支持，仅在Windows上运行")
+
+# 检查是否在conda环境中
+if is_conda():
+    messagebox.showwarning("警告", "当前环境为conda环境，可能会导致一些问题，建议在普通环境中运行\n如果仍要运行，请注释 app.py 中的检查部分。")
+    exit(1)
 
 logger = get_logger()
 highlighter_factory = HighlighterFactory()
