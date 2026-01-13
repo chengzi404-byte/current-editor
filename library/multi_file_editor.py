@@ -156,6 +156,12 @@ class MultiFileEditor:
     def get_notebook(self):
         """获取Notebook组件对象"""
         return self.notebook
+
+    def get_editor(self, tab_id):
+        """获取指定选项卡的编辑器"""
+        if tab_id in self.tab_editors:
+            return self.tab_editors[tab_id]
+        return None
     
     def on_tab_changed(self, event):
         """选项卡切换事件处理"""

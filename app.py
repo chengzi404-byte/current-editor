@@ -152,18 +152,34 @@ class App:
         self.root.bind("<F5>", lambda event: self.editor_ops.run())
     
     def _setup_autosave(self):
-        """
-        设置自动保存
-        """
+        """设置自动保存"""
+        print("\n=== 自动保存功能初始化 ===")
+        logger.info("=== 自动保存功能初始化 ===")
+        
         def schedule_autosave():
             """自动保存定时器"""
+            print("\n--- 执行自动保存任务 ---")
+            logger.info("--- 执行自动保存任务 ---")
             try:
+                # 显式调用autosave方法
                 self.editor_ops.autosave()
+                print("自动保存方法调用完成")
+                logger.info("自动保存方法调用完成")
+                
+                # 再次设置定时器
                 self.root.after(5000, schedule_autosave)  # Auto-save every 5 seconds
+                print(f"已安排下一次自动保存（5秒后）")
+                logger.info(f"已安排下一次自动保存（5秒后）")
             except Exception as e:
-                logger.error(f"自动保存失败: {str(e)}")
+                print(f"自动保存执行异常: {str(e)}")
+                logger.error(f"自动保存执行异常: {str(e)}")
+                import traceback
+                print(f"异常详细信息: {traceback.format_exc()}")
+                logger.error(f"异常详细信息: {traceback.format_exc()}")
         
         # Start auto-save
+        print("启动第一次自动保存...")
+        logger.info("启动第一次自动保存...")
         schedule_autosave()
     
     def _init_highlighters(self):
