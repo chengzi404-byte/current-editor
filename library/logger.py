@@ -278,7 +278,16 @@ class AsyncLogger:
                     # 正常模式，直接写入日志文件
                     self.async_handler.enqueue_log(record)
         
+        # 添加控制台输出处理器
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+        )
+        console_handler.setFormatter(console_formatter)
+        
+        # 添加处理器到日志记录器
         self.logger.addHandler(CustomHandler(self.async_handler, self))
+        self.logger.addHandler(console_handler)
         
     def _make_log_record(self, level, msg, *args, **kwargs):
         """创建日志记录"""

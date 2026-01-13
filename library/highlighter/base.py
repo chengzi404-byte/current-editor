@@ -70,6 +70,9 @@ class BaseHighlighter:
         # Class names collection for class reference highlighting
         self.class_names = set()
         
+        # Track instance attributes (self.*) per class
+        self.class_instance_attrs = {}  # {class_name: set(attr_name)}
+        
         # Languange keywords
         self.language_keywords = {
             'control': {'if', 'else', 'elif', 'while', 'for', 'try', 'except', 'finally', 'with', 'break', 'continue', 'return'},
@@ -394,6 +397,9 @@ class BaseHighlighter:
         # Class names collection for class reference highlighting
         self.class_names = set()
         
+        # Reset instance attributes tracking
+        self.class_instance_attrs = {}
+        
         # Build parent map and collect class names in a single pass
         self._parent_map = {}
         
@@ -402,6 +408,17 @@ class BaseHighlighter:
             # Collect class names
             if isinstance(node, ast.ClassDef):
                 self.class_names.add(node.name)
+                self.class_instance_attrs[node.name] = set()
+            
+            # Track instance attributes (self.*) assignments
+            if isinstance(node, ast.Assign):
+                # Check if this is an instance attribute assignment
+                for target in node.targets:
+                    if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name) and target.value.id == 'self':
+                        # Get the class name this assignment belongs to
+                        class_node = self._find_enclosing_class(node)
+                        if class_node:
+                            self.class_instance_attrs[class_node.name].add(target.attr)
             
             # Build parent map
             for child in ast.iter_child_nodes(node):
@@ -435,6 +452,18 @@ class BaseHighlighter:
     def _get_parent_node(self, node: ast.AST) -> Optional[ast.AST]:
         """Get parent node of the given node"""
         return self._parent_map.get(node)
+    
+    def _find_enclosing_class(self, node: ast.AST) -> Optional[ast.ClassDef]:
+        """Find the enclosing class definition for a given node"""
+        current_node = node
+        while current_node:
+            parent = self._get_parent_node(current_node)
+            if not parent:
+                return None
+            if isinstance(parent, ast.ClassDef):
+                return parent
+            current_node = parent
+        return None
             
     def _highlight_node(self, node: ast.AST):
         """Highlight specific AST node"""
@@ -652,6 +681,26 @@ class BaseHighlighter:
                     self._add_tag("imported_function", attr_start, attr_end)
                 return
         
+        # Check if this is a self.* attribute access
+        if isinstance(node.value, ast.Name) and node.value.id == 'self':
+            # Highlight 'self'
+            self_start, self_end = self.get_position(node.value)
+            self._add_tag("self", self_start, self_end)
+            
+            # Calculate attribute position
+            attr_start = f"{node.lineno}.{node.col_offset + 5}"  # len('self.') = 5
+            attr_end = f"{node.lineno}.{node.col_offset + 5 + len(node.attr)}"
+            
+            # Check if this is an instance method call
+            parent = self._get_parent_node(node)
+            if parent and isinstance(parent, ast.Call):
+                # Method call
+                self._add_tag("method", attr_start, attr_end)
+            else:
+                # Instance attribute
+                self._add_tag("property", attr_start, attr_end)
+            return
+        
         # Highlight the base object
         if hasattr(node.value, 'lineno'):
             start, end = self.get_position(node.value)
@@ -699,6 +748,7 @@ class BaseHighlighter:
 
     def _highlight_name(self, node: ast.Name, start: str, end: str):
         """Highlight name with context awareness"""
+        # 简化的变量名高亮逻辑
         if node.id in keyword.kwlist:
             self._add_tag("keyword", start, end)
         elif node.id in dir(builtins):
@@ -708,42 +758,50 @@ class BaseHighlighter:
         elif node.id == 'self':
             self._add_tag("self", start, end)
         else:
-            # Check if this is an imported symbol
-            if hasattr(self, 'imported_symbols') and node.id in self.imported_symbols:
-                # Determine symbol type based on context
-                parent = self._get_parent_node(node)
-                if parent and isinstance(parent, ast.Call) and parent.func == node:
-                    # Function call
-                    self._add_tag("imported_function", start, end)
-                elif node.id[0].isupper() or self._is_likely_class_name(node.id):
-                    # Class reference
-                    self._add_tag("imported_class", start, end)
-                else:
-                    # Variable reference
-                    self._add_tag("imported_variable", start, end)
-            else:
-                # 根据上下文判断是函数引用还是变量引用
-                parent = self._get_parent_node(node)
-                if parent and isinstance(parent, ast.Call) and parent.func == node:
-                    # 如果是函数调用的函数名，检查是否是类名
-                    if node.id in self.class_names or self._is_likely_class_name(node.id):
-                        # 如果是类实例化，高亮为class
-                        self._add_tag("class", start, end)
-                    else:
-                        # 如果是函数调用，高亮为function
-                        self._add_tag("function", start, end)
-                elif parent and isinstance(parent, ast.Attribute) and parent.value == node:
-                    # 如果是属性访问的基础对象，高亮为variable
-                    self._add_tag("variable", start, end)
-                elif parent and isinstance(parent, ast.Assign) and node in parent.targets:
-                    # 如果是赋值语句的目标，高亮为variable
-                    self._add_tag("variable", start, end)
-                elif node.id in self.class_names or self._is_likely_class_name(node.id):
-                    # 如果是类引用（如类型注解），高亮为class
+            # 获取父节点
+            parent = self._get_parent_node(node)
+            
+            # 检查是否是类定义
+            if parent and isinstance(parent, ast.ClassDef) and node.id == parent.name:
+                self.class_names.add(node.id)
+                self._add_tag("class", start, end)
+            # 检查是否是函数定义
+            elif parent and isinstance(parent, ast.FunctionDef) and node.id == parent.name:
+                self._add_tag("function", start, end)
+            # 检查是否是函数参数
+            elif parent and isinstance(parent, ast.arg) and parent.arg == node.id:
+                self._add_tag("parameter", start, end)
+            # 检查是否是函数调用
+            elif parent and isinstance(parent, ast.Call) and parent.func == node:
+                if node.id in self.class_names or self._is_likely_class_name(node.id):
+                    # 类实例化
                     self._add_tag("class", start, end)
                 else:
-                    # 默认情况下，高亮为variable
-                    self._add_tag("variable", start, end)
+                    # 函数调用
+                    self._add_tag("function", start, end)
+            # 检查是否是赋值语句的目标（包括元组解包）
+            elif parent and isinstance(parent, ast.Assign):
+                for target in parent.targets:
+                    if isinstance(target, ast.Name) and target.id == node.id:
+                        self._add_tag("variable", start, end)
+                        return
+                    elif isinstance(target, (ast.Tuple, ast.List)):
+                        for elt in target.elts:
+                            if isinstance(elt, ast.Name) and elt.id == node.id:
+                                self._add_tag("variable", start, end)
+                                return
+            # 检查是否是属性访问的基础对象
+            elif parent and isinstance(parent, ast.Attribute) and parent.value == node:
+                self._add_tag("variable", start, end)
+            # 检查是否是类引用
+            elif node.id in self.class_names or self._is_likely_class_name(node.id):
+                self._add_tag("class", start, end)
+            # 检查是否是导入的符号
+            elif hasattr(self, 'imported_symbols') and node.id in self.imported_symbols:
+                self._add_tag("imported_variable", start, end)
+            # 默认情况下，高亮为variable
+            else:
+                self._add_tag("variable", start, end)
                 
     def _is_likely_class_name(self, name: str) -> bool:
         """判断一个名称是否可能是类名（基于命名约定）"""
@@ -1055,8 +1113,25 @@ class BaseHighlighter:
             if end_lineno is not None and end_col_offset is not None:
                 end = f"{end_lineno}.{end_col_offset}"
             else:
-                # 计算节点长度作为备用方案
-                node_str = str(node) if node is not None else ""
-                end = f"{lineno}.{col_offset + len(node_str)}"
+                # 根据节点类型使用不同的方式计算结束位置
+                if isinstance(node, ast.Name):
+                    # 对于Name节点，使用id的实际长度
+                    name_length = len(node.id)
+                    end = f"{lineno}.{col_offset + name_length}"
+                elif isinstance(node, ast.Attribute):
+                    # 对于Attribute节点，计算完整属性访问的长度
+                    if isinstance(node.value, ast.Name):
+                        total_length = len(node.value.id) + 1 + len(node.attr)  # +1 是点号
+                        end = f"{lineno}.{col_offset + total_length}"
+                    else:
+                        # 回退到基本计算
+                        node_str = str(node) if node is not None else ""
+                        end = f"{lineno}.{col_offset + len(node_str)}"
+                else:
+                    # 回退到基本计算
+                    node_str = str(node) if node is not None else ""
+                    end = f"{lineno}.{col_offset + len(node_str)}"
+            
             return start, end
+        
         return "1.0", "1.0"

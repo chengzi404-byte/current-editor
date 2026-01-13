@@ -13,16 +13,16 @@ class EditOperations:
     处理复制、粘贴、撤销、重做等编辑操作
     """
     
-    def __init__(self, codearea, printarea=None):
+    def __init__(self, codearea, commandarea=None):
         """
         初始化编辑操作类
         
         Args:
             codearea: 代码编辑区域
-            printarea: 输出区域（可选）
+            commandarea: 命令行区域（可选）
         """
         self.codearea = codearea
-        self.printarea = printarea
+        self.commandarea = commandarea
         self.copy_msg = ""
     
     def copy(self):
@@ -33,8 +33,8 @@ class EditOperations:
             self.copy_msg = self.codearea.selection_get()
         except:
             try:
-                if self.printarea:
-                    self.copy_msg = self.printarea.selection_get()
+                if self.commandarea:
+                    self.copy_msg = self.commandarea.selection_get()
             except:
                 # 多语言适配：当没有选中文本时的提示
                 print(t("no_text_selected_to_copy"))

@@ -8,7 +8,7 @@ Editor Operations Module
 import subprocess
 import sys
 import zipfile
-import shlex
+from library.api import ConfigManager, Settings
 from pathlib import Path
 from tkinter import (
     END, messagebox, filedialog
@@ -19,7 +19,8 @@ from operations.file_operations import FileOperations
 from operations.edit_operations import EditOperations
 from operations.terminal import TerminalOperations
 from operations.settings_manager import SettingsManager
-from operations.ai_service import AIService
+# from operations.ai_service import AIService
+import os
 
 # 导入国际化模块
 from i18n import t
@@ -34,8 +35,7 @@ class EditorOperations:
     注意：这是一个适配器类，用于将旧的API调用转发到新的操作类
     """
     
-    def __init__(self, root, codearea, printarea, inputarea, commandarea, 
-                 ai_display, ai_input, ai_send_button, ai_queue, ai_loading, multi_editor=None):
+    def __init__(self, root, codearea, commandarea, multi_editor=None):
         """
         初始化编辑器操作
         
@@ -54,25 +54,24 @@ class EditorOperations:
         """
         # 初始化新的操作类
         self.file_ops = FileOperations()
-        self.edit_ops = EditOperations(codearea, printarea)
-        self.terminal_ops = TerminalOperations(printarea)
-        self.settings_manager = SettingsManager(root, codearea, printarea, t("settings"))
-        self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
+        self.edit_ops = EditOperations(codearea, commandarea)
+        self.terminal_ops = TerminalOperations(commandarea)
+        self.settings_manager = SettingsManager(root, codearea, commandarea, t("settings"))
+#       self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
         
         # 保存旧的API需要的属性
         self.root = root
         self.codearea = codearea
-        self.printarea = printarea
-        self.inputarea = inputarea
         self.commandarea = commandarea
-        self.ai_display = ai_display
-        self.ai_input = ai_input
-        self.ai_send_button = ai_send_button
-        self.ai_queue = ai_queue
-        self.ai_loading = ai_loading
+        # self.ai_display = ai_display
+        # self.ai_input = ai_input
+        # self.ai_send_button = ai_send_button
+        # self.ai_queue = ai_queue
+        # self.ai_loading = ai_loading
         self.multi_editor = multi_editor
         self.file_path = "temp_script.txt"
         self.copy_msg = ""
+        self.config = ConfigManager()
     
     # -------------------- 文件操作 --------------------
     def new_file(self):
@@ -93,9 +92,178 @@ class EditorOperations:
     
     def autosave(self):
         """文件 > 自动保存"""
-        # 自动保存功能，暂时为空实现
-        # 后续可以在这里添加实际的自动保存逻辑
-        pass
+        import tkinter as tk
+        from pathlib import Path
+        import os
+        
+        print("\n=== 开始自动保存 ===")
+        
+        try:
+            # 1. 检查基本依赖
+            print(f"self.multi_editor 是否存在: {self.multi_editor is not None}")
+            if self.multi_editor is None:
+                print("ERROR: self.multi_editor 不存在")
+                logger.error("自动保存失败: self.multi_editor不存在")
+                return
+            
+            # 2. 获取并验证配置
+            save_path_config = self.config.get("editor.file-path", "./temp")
+            print(f"配置的保存路径: {save_path_config}")
+            
+            # 确保save_path是Path对象
+            if isinstance(save_path_config, str):
+                save_path_config = Path(save_path_config)
+            
+            # 3. 确定保存目录
+            if save_path_config.suffix:
+                save_dir = save_path_config.parent
+                print(f"配置路径是文件，使用父目录: {save_dir}")
+            else:
+                save_dir = save_path_config
+                print(f"配置路径是目录，直接使用: {save_dir}")
+            
+            # 4. 确保保存目录存在
+            save_dir.mkdir(parents=True, exist_ok=True)
+            print(f"保存目录: {save_dir}, 是否存在: {save_dir.exists()}")
+            
+            # 5. 测试直接保存一个文件到目录
+            test_file = save_dir / "test_autosave.txt"
+            with open(test_file, "w") as f:
+                f.write("测试自动保存功能")
+            print(f"✅ 测试文件已保存: {test_file}, 大小: {os.path.getsize(test_file)} 字节")
+            
+            # 6. 获取notebook和标签页
+            notebook = self.multi_editor.get_notebook()
+            print(f"notebook 对象: {notebook}")
+            
+            tab_ids = notebook.tabs()
+            print(f"获取到的标签页数量: {len(tab_ids)}")
+            print(f"标签页ID列表: {tab_ids}")
+            
+            # 7. 检查multi_editor的内部状态
+            print(f"multi_editor.tab_editors 数量: {len(self.multi_editor.tab_editors)}")
+            print(f"multi_editor.tab_editors 内容: {self.multi_editor.tab_editors}")
+            
+            # 8. 遍历标签页并保存内容的可靠方式
+            print("\n--- 遍历标签页并保存内容 ---")
+            save_count = 0
+            
+            # 方式1: 优先通过notebook.tabs()获取所有标签页
+            for i, tab_id in enumerate(tab_ids):
+                print(f"\n处理标签页 {i}, ID: {tab_id}")
+                
+                # 获取标题
+                try:
+                    title = notebook.tab(tab_id, "text")
+                    print(f"  标题: '{title}'")
+                except Exception as title_error:
+                    print(f"  ❌ 获取标题失败: {title_error}")
+                    title = f"untitled_{i}"
+                    print(f"  使用默认标题: '{title}'")
+                
+                # 获取编辑器的三种方式
+                editor = None
+                
+                # 方式1.1: 通过get_editor方法
+                editor = self.multi_editor.get_editor(tab_id)
+                if editor:
+                    print(f"  ✅ 通过get_editor获取编辑器成功")
+                else:
+                    # 方式1.2: 直接从tab_editors字典查找
+                    print(f"  ❌ 通过get_editor获取编辑器失败")
+                    
+                    # 检查tab_editors中是否有None键
+                    if None in self.multi_editor.tab_editors:
+                        editor = self.multi_editor.tab_editors[None]
+                        print(f"  ✅ 从tab_editors[None]获取编辑器成功")
+                    else:
+                        # 方式1.3: 直接通过nametowidget获取
+                        try:
+                            # 获取标签页框架
+                            tab_frame = notebook.nametowidget(tab_id)
+                            # 查找框架中的Text组件
+                            for child in tab_frame.winfo_children():
+                                if child.winfo_class() == 'Text':
+                                    editor = child
+                                    print(f"  ✅ 通过nametowidget查找Text组件成功")
+                                    break
+                        except Exception as widget_error:
+                            print(f"  ❌ 通过nametowidget获取编辑器失败: {widget_error}")
+                
+                if editor:
+                    try:
+                        # 获取编辑器内容
+                        content = editor.get("0.0", tk.END)
+                        print(f"  编辑器内容长度: {len(content)} 字符")
+                        
+                        # 检查内容是否为空
+                        if not content.strip():
+                            print(f"  ⏭️  跳过空内容")
+                            continue
+                        
+                        # 使用安全的文件名
+                        safe_title = "".join(c if c.isalnum() or c in ('_', '-', '.') else '_' for c in title)
+                        file_path = save_dir / f"{safe_title}.txt"
+                        print(f"  准备保存到: {file_path}")
+                        
+                        # 写入文件
+                        with open(file_path, "w", encoding="utf-8") as f:
+                            f.write(content)
+                        
+                        # 验证文件是否保存成功
+                        if file_path.exists():
+                            file_size = os.path.getsize(file_path)
+                            print(f"  ✅ 文件保存成功: {file_path}")
+                            print(f"  文件大小: {file_size} 字节")
+                            logger.info(f"✅ 自动保存成功: {file_path} ({file_size} 字节)")
+                            save_count += 1
+                        else:
+                            print(f"  ❌ 文件保存失败: 文件不存在")
+                            logger.error(f"❌ 自动保存失败: 文件不存在: {file_path}")
+                            
+                    except Exception as save_error:
+                        print(f"  ❌ 保存失败: {save_error}")
+                        logger.error(f"❌ 自动保存失败: {str(save_error)}")
+            
+            # 方式2: 额外保存tab_editors中所有编辑器（防止遗漏）
+            print("\n--- 额外检查tab_editors字典 ---")
+            for tab_id_key, editor in self.multi_editor.tab_editors.items():
+                if editor:
+                    try:
+                        # 检查是否已经保存过
+                        content = editor.get("0.0", tk.END)
+                        if not content.strip():
+                            continue
+                        
+                        # 使用通用标题
+                        title = f"editor_{tab_id_key}"
+                        safe_title = "".join(c if c.isalnum() or c in ('_', '-', '.') else '_' for c in title)
+                        file_path = save_dir / f"extra_{safe_title}.txt"
+                        
+                        # 只保存未保存过的内容
+                        if not file_path.exists():
+                            with open(file_path, "w", encoding="utf-8") as f:
+                                f.write(content)
+                            print(f"  ✅ 额外保存编辑器成功: {file_path}")
+                            logger.info(f"✅ 额外自动保存成功: {file_path}")
+                            save_count += 1
+                        else:
+                            print(f"  ⏭️  跳过已保存的额外编辑器")
+                    except Exception as extra_error:
+                        print(f"  ❌ 额外保存失败: {extra_error}")
+            
+            print(f"\n=== 自动保存完成，共保存 {save_count} 个编辑器 ===")
+            logger.info(f"自动保存完成，共保存 {save_count} 个编辑器")
+            
+            print("\n=== 自动保存完成 ===")
+            logger.info("自动保存完成")
+            
+        except Exception as e:
+            print(f"\n❌ 自动保存整体异常: {str(e)}")
+            import traceback
+            print(f"异常详细信息: {traceback.format_exc()}")
+            logger.error(f"自动保存失败: {str(e)}")
+            logger.error(f"异常详细信息: {traceback.format_exc()}")
     
     def new_window(self):
         """文件 > 新建窗口"""
@@ -223,3 +391,59 @@ class EditorOperations:
                     _populate_subdirectories(tree, item_path, node_id)
         
         _populate_subdirectories(self.root.file_tree, path)
+
+    def open_file(self, text_widget):
+        """
+        打开文件并读取内容
+        """
+        file_path = filedialog.askopenfilename(title=t("open_file"), filetypes=[(t("all_files"), "*.*")])
+        if not file_path:
+            return None
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                text_widget.delete('1.0', 'end')
+                text_widget.insert('1.0', content)
+                self.current_file_path = file_path  # 更新当前文件路径
+            self.multi_editor.get_notebook().tab(self.multi_editor.get_current_tab(), text=os.path.basename(file_path))
+            self.root.title(f"{os.path.basename(file_path)} - {t('editor_title')}") # 更新窗口标题
+        except Exception as e:
+            print("Trying to open file but Got exception: ", str(e))
+
+    def save_as_file(self, text_widget):
+        """
+        保存文件为...
+        """
+        file_path = filedialog.asksaveasfilename(title=t("save_file"), filetypes=[(t("all_files"), "*.*")])
+        if not file_path:
+            return None
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                content = text_widget.get('1.0', 'end')
+                file.write(content)
+        except Exception as e:
+            print("Trying to save file but Got exception: ", str(e))
+
+    def save_file(self, text_widget):
+        """
+        保存文件
+        """
+        if not self.current_file_path:
+            self.save_as_file(text_widget)
+            return
+        
+        try:
+            with open(self.current_file_path, 'w', encoding='utf-8') as file:
+                content = text_widget.get('1.0', 'end')
+                file.write(content)
+        except Exception as e:
+            print("Trying to save file but Got exception: ", str(e))
+
+    @property
+    def text_widget(self):
+        """
+        获取当前文本小部件
+        """
+        return self.codearea

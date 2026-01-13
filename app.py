@@ -11,11 +11,25 @@ from ui.main_window import MainWindow
 from ui.file_browser import FileBrowser
 from ui.menu import MenuBar
 from pathlib import Path
+from tkinter import messagebox
+
 import os
 import json
 
 # 导入国际化模块
 from i18n import t
+
+from library.py_executable_check import is_conda
+
+# 检查是否是支持的系统类型
+import platform
+if platform.system() not in ["Windows"]:
+    messagebox.showwarning("警告", "当前系统不支持，仅在Windows上运行")
+
+# 检查是否在conda环境中
+if is_conda():
+    messagebox.showwarning("警告", "当前环境为conda环境，可能会导致一些问题，建议在普通环境中运行\n如果仍要运行，请注释 app.py 中的检查部分。")
+    exit(1)
 
 logger = get_logger()
 highlighter_factory = HighlighterFactory()
@@ -106,8 +120,7 @@ class App:
         # 初始化编辑器操作
         logger.info("初始化编辑器操作")
         self.editor_ops = EditorOperations(
-            self.root, self.codearea, self.root.terminal_area, None, None, 
-            None, None, None, None, None, self.multi_editor
+            self.root, self.codearea, self.root.terminal_area, self.multi_editor
         )
         
         # 创建菜单
@@ -153,18 +166,34 @@ class App:
         self.root.bind("<F5>", lambda event: self.editor_ops.run())
     
     def _setup_autosave(self):
-        """
-        设置自动保存
-        """
+        """设置自动保存"""
+        print("\n=== 自动保存功能初始化 ===")
+        logger.info("=== 自动保存功能初始化 ===")
+        
         def schedule_autosave():
             """自动保存定时器"""
+            print("\n--- 执行自动保存任务 ---")
+            logger.info("--- 执行自动保存任务 ---")
             try:
+                # 显式调用autosave方法
                 self.editor_ops.autosave()
+                print("自动保存方法调用完成")
+                logger.info("自动保存方法调用完成")
+                
+                # 再次设置定时器
                 self.root.after(5000, schedule_autosave)  # Auto-save every 5 seconds
+                print(f"已安排下一次自动保存（5秒后）")
+                logger.info(f"已安排下一次自动保存（5秒后）")
             except Exception as e:
-                logger.error(f"自动保存失败: {str(e)}")
+                print(f"自动保存执行异常: {str(e)}")
+                logger.error(f"自动保存执行异常: {str(e)}")
+                import traceback
+                print(f"异常详细信息: {traceback.format_exc()}")
+                logger.error(f"异常详细信息: {traceback.format_exc()}")
         
         # Start auto-save
+        print("启动第一次自动保存...")
+        logger.info("启动第一次自动保存...")
         schedule_autosave()
     
     def _init_highlighters(self):

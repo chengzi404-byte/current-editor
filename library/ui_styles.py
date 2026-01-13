@@ -347,7 +347,9 @@ class ModernStyles:
         )
     
     def apply_menu_style(self, menu):
-        """应用菜单样式"""
+        """
+        应用菜单样式
+        """
         menu.configure(
             bg=self.get_color("surface"),
             fg=self.get_color("text_primary"),
@@ -355,6 +357,81 @@ class ModernStyles:
             activeforeground="white",
             font=self.get_font("sm")
         )
+    
+    def apply_notebook_style(self):
+        """
+        应用Notebook样式，包括激活Tab的蓝色底部横条和过渡动画
+        """
+        from tkinter import ttk
+        style = ttk.Style()
+        
+        # 获取主题色彩
+        bg_color = self.get_color("surface")
+        fg_color = self.get_color("text_primary")
+        primary_color = self.get_color("primary")
+        border_color = self.get_color("border")
+        hover_color = self.get_color("surface_hover")
+        
+        # 配置Notebook基本样式
+        style.configure("ModernNotebook.TNotebook",
+                       background=bg_color,
+                       foreground=fg_color,
+                       borderwidth=0,
+                       relief="flat")
+        
+        # 配置Notebook标签页样式
+        style.configure("ModernNotebook.TNotebook.Tab",
+                       background=bg_color,
+                       foreground=fg_color,
+                       font=self.get_font("sm"),
+                       padding=[15, 8, 15, 8],
+                       borderwidth=0,
+                       relief="flat")
+        
+        # 配置激活状态的Tab样式，添加蓝色底部横条
+        style.map("ModernNotebook.TNotebook.Tab",
+                 background=[("selected", bg_color),
+                            ("active", hover_color),
+                            ("!active", bg_color)],
+                 foreground=[("selected", fg_color),
+                            ("active", fg_color),
+                            ("!active", self.get_color("text_secondary"))],
+                 borderwidth=[("selected", 2),
+                             ("active", 1),
+                             ("!active", 0)],
+                 bordercolor=[("selected", primary_color),
+                             ("active", primary_color),
+                             ("!active", border_color)],
+                 relief=[("selected", "flat"),
+                        ("active", "flat"),
+                        ("!active", "flat")])
+        
+        # 添加底部蓝色横条效果
+        style.configure("ModernNotebook.TNotebook.Tab",
+                       compound="bottom",
+                       borderwidth=2,
+                       focuscolor=primary_color)
+        
+        # 为Tab切换添加过渡效果，使用不同状态的颜色映射
+        style.map("ModernNotebook.TNotebook.Tab",
+                 lightcolor=[("selected", primary_color),
+                            ("active", primary_color),
+                            ("!active", border_color)],
+                 darkcolor=[("selected", primary_color),
+                           ("active", primary_color),
+                           ("!active", border_color)],
+                 highlightcolor=[("selected", primary_color),
+                               ("active", primary_color),
+                               ("!active", border_color)],
+                 highlightbackground=[("selected", primary_color),
+                                    ("active", primary_color),
+                                    ("!active", border_color)])
+        
+        # 优化Tab内容区域样式
+        style.configure("ModernNotebook.TNotebook.Content",
+                       background=bg_color,
+                       borderwidth=0,
+                       relief="flat")
     
     def _lighten_color(self, color, factor):
         """颜色变亮"""
@@ -393,7 +470,9 @@ def set_theme(theme):
 
 
 def apply_modern_style(widget, widget_type, **kwargs):
-    """应用现代化样式到指定组件"""
+    """
+    应用现代化样式到指定组件
+    """
     style = get_style()
     
     style_methods = {
@@ -406,6 +485,7 @@ def apply_modern_style(widget, widget_type, **kwargs):
         "treeview": style.apply_treeview_style,
         "labelframe": style.apply_label_frame_style,
         "menu": style.apply_menu_style,
+        "notebook": style.apply_notebook_style,
         "scrollbar": lambda widget, **kwargs: None,  # scrollbar组件不需要特殊样式，使用默认样式
     }
     

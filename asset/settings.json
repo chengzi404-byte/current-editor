@@ -3,7 +3,7 @@
     "editor.lang": "Chinese",
     "editor.font": "Consolas",
     "editor.fontsize": 12,
-    "editor.file-path": "./temp_script.txt",
+    "editor.file-path": "./temp",
     "highlighter.syntax-highlighting": {
         "theme": "github-dark",
         "enable-type-hints": true,

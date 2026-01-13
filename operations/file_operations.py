@@ -1,8 +1,8 @@
-import os
+
 import shutil
-import json
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+from tkinter import messagebox
 
 # 导入国际化模块 - 修改为绝对路径导入
 try:
@@ -252,6 +252,22 @@ class FileOperations:
         except Exception as e:
             print(t("search_error", error=str(e)))
             return []
+
+    def open_file(self, text_widget):
+        """
+        打开文件并读取内容
+        """
+        file_path = messagebox.askopenfilename(title=t("open_file"), filetypes=[(t("all_files"), "*.*")])
+        if not file_path:
+            return None
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                text_widget.delete('1.0', 'end')
+                text_widget.insert('1.0', content)
+        except Exception as e:
+            print("Trying to open file but Got exception: ", str(e))
 
 # 使用示例
 if __name__ == "__main__":

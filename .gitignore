@@ -160,5 +160,5 @@ test.*
 *_demo.*
 
 # Test script
-temp_script.txt
+temp/
 .trae/
