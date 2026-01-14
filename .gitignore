@@ -153,12 +153,12 @@ cython_debug/
 .aider*
 
 # Repo log
-editor.log
+*.log
 
 # Tests & Demos
 test.*
 *_demo.*
 
-# Test script
+# Auto-save cache
 temp/
 .trae/

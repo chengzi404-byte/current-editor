@@ -152,7 +152,7 @@ class SymbolChecker(BaseStaticChecker):
             try:
                 # 运行flake8命令
                 result = subprocess.run(
-                    ["D:/ProgramData/anaconda3/python.exe", "-m", "flake8", 
+                    ["python", "-m", "flake8", 
                      "--format", "%(row)d,%(col)d,%(code)s,%(text)s", 
                      temp_file_path],
                     capture_output=True,

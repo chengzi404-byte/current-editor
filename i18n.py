@@ -66,8 +66,3 @@ def t(key: str, **kwargs) -> str:
 if __name__ == '__main__':
     # 测试
     print(t('app_title'))
-    print(t('app.menu.file.new'))
-    print(t('app.menu.file.open'))
-    print(t('app.menu.file.save'))
-    print(t('app.menu.file.save_as'))
-    print(t('app.menu.file.close'))

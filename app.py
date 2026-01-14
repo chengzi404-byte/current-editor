@@ -32,6 +32,10 @@ if is_conda():
     messagebox.showwarning("警告", "当前环境为conda环境，可能会导致一些问题，建议在普通环境中运行\n如果仍要运行，请注释 app.py 中的检查部分。")
     exit(1)
 
+# 导入并执行第一次启动操作
+from library.startup import first_startup_operations
+first_startup_operations()
+
 logger = get_logger()
 highlighter_factory = HighlighterFactory()
 file_path = "temp_script.txt"
