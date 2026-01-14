@@ -7,6 +7,7 @@ from library.logger import get_logger, shutdown_logger
 from library.api import Settings
 from library.multi_file_editor import MultiFileEditor
 from library.editor_operations import EditorOperations
+from library.file_handle_manager import get_file_manager, shutdown_file_manager
 from ui.main_window import MainWindow
 from ui.file_browser import FileBrowser
 from ui.menu import MenuBar
@@ -147,6 +148,10 @@ class App:
         logger.info("绑定右键菜单")
         self._bind_popup_menu()
         
+        # 初始化文件句柄管理器
+        logger.info("初始化文件句柄管理器")
+        self.file_handle_manager = get_file_manager()
+        
         logger.info("应用程序初始化完成")
         
         # 添加一个简单的测试文本到编辑器
@@ -276,6 +281,10 @@ class App:
             程序退出时的清理操作
             """
             logger.info("程序正在退出...")
+            
+            # 关闭文件句柄管理器
+            logger.info("关闭文件句柄管理器")
+            shutdown_file_manager()
             
             # 关闭日志系统
             shutdown_logger()
