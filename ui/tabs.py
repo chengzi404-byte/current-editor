@@ -460,7 +460,7 @@ class HelpTab(Frame):
         basic_text.pack(fill="both", expand=True, padx=10, pady=10)
         
         basic_content = f'{t("help.about.title")}\n\n'
-        basic_content += f'version: v0.1.1\n'
+        basic_content += f'version: Testing(v0.x.x)\n'
         basic_content += f'{t("help.about.description")}\n'
         
         basic_text.insert("1.0", basic_content)

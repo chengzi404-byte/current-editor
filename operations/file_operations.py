@@ -12,6 +12,9 @@ except ImportError:
     def t(key, **kwargs):
         return "Err: i18n module not found"
 
+# 导入文件句柄管理器
+from library.file_handle_manager import get_file_manager
+
 class FileOperations:
     """文件操作类，提供常见的文件和目录操作功能"""
     

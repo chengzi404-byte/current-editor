@@ -559,6 +559,38 @@ class MultiFileEditor:
         # 分块读取大文件
         return self._open_large_file_in_chunks(file_path)
     
+    def _open_large_file_in_chunks(self, file_path):
+        """分块读取大文件"""
+        try:
+            # 导入文件句柄管理器
+            from library.file_handle_manager import get_file_manager
+            
+            file_manager = get_file_manager()
+            
+            # 分块读取文件内容
+            chunk_size = 1024 * 1024  # 每次读取1MB
+            content = ""
+            
+            # 使用文件句柄管理器打开文件
+            with file_manager.open(file_path, 'r', encoding='utf-8') as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    content += chunk
+            
+            # 创建新选项卡
+            tab_title = os.path.basename(file_path)
+            self.create_new_tab(tab_title, content, file_path)
+            return True
+            
+        except Exception as e:
+            messagebox.showerror(
+                "错误",
+                f"打开大文件失败: {str(e)}"
+            )
+            return False
+    
     def get_all_content(self):
         """获取所有选项卡的内容"""
         all_content = {}
