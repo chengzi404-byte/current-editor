@@ -233,6 +233,7 @@ def hello_world():
 import os
 from tkinter import Tk, messagebox
 
+
 def main():
     root = Tk()
     messagebox.showinfo("Info", "Hello")
@@ -256,6 +257,278 @@ def main():
         # 验证导入相关的标签被添加
         import_tags = [tag for tag, start, end in added_tags if 'imported' in tag]
         assert len(import_tags) > 0
+    
+    def test_highlight_f_strings(self):
+        """测试f-string高亮"""
+        python_code = """
+name = "World"
+age = 30
+message = f\"Hello, {name}! You are {age} years old.\"\nmulti_line_fstring = f'''Hello,\n{name}!\nYou are {age} years old.'''
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证f-string相关的标签被添加
+        string_tags = [tag for tag, start, end in added_tags if tag == "string"]
+        assert len(string_tags) > 0
+    
+    def test_highlight_magic_methods(self):
+        """测试魔术方法高亮"""
+        python_code = """
+class TestClass:
+    def __init__(self):
+        self.value = 0
+    
+    def __str__(self):
+        return f"TestClass({self.value})"
+    
+    def __repr__(self):
+        return f"TestClass(value={self.value})"
+    
+    def __add__(self, other):
+        return TestClass(self.value + other.value)
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证方法相关的标签被添加
+        method_tags = [tag for tag, start, end in added_tags if tag == "method"]
+        assert len(method_tags) > 0
+    
+    def test_highlight_class_inheritance(self):
+        """测试类继承高亮"""
+        python_code = """
+class BaseClass:
+    def base_method(self):
+        pass
+
+
+class DerivedClass(BaseClass):
+    def derived_method(self):
+        pass
+
+
+class MultipleInheritance(BaseClass, AnotherClass):
+    def multiple_method(self):
+        pass
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证类相关的标签被添加
+        class_tags = [tag for tag, start, end in added_tags if tag == "class"]
+        assert len(class_tags) > 0
+    
+    def test_highlight_decorators(self):
+        """测试装饰器高亮"""
+        python_code = """
+import functools
+
+
+def decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@decorator
+def decorated_function():
+    pass
+
+
+class TestClass:
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+    
+    @classmethod
+    def from_string(cls, string):
+        return cls()
+    
+    @staticmethod
+    def static_method():
+        pass
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证装饰器相关的标签被添加
+        decorator_tags = [tag for tag, start, end in added_tags if tag == "decorator"]
+        assert len(decorator_tags) > 0
+    
+    def test_highlight_type_annotations(self):
+        """测试类型注解高亮"""
+        python_code = """
+from typing import List, Dict, Tuple, Optional, Union
+
+def typed_function(x: int, y: str, z: List[float]) -> Dict[str, Union[int, str]]:
+    result: Dict[str, Union[int, str]] = {}
+    result["x"] = x
+    result["y"] = y
+    result["z"] = len(z)
+    return result
+
+
+class TypedClass:
+    def __init__(self, value: int = 0):
+        self.value: int = value
+    
+    def process(self, data: Optional[List[str]]) -> Tuple[bool, str]:
+        if data is None:
+            return False, "No data"
+        return True, f"Processed {len(data)} items"
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证类型注解相关的标签被添加
+        type_tags = [tag for tag, start, end in added_tags if tag == "type_annotation"]
+        assert len(type_tags) > 0
+    
+    def test_highlight_async_syntax(self):
+        """测试异步语法高亮"""
+        python_code = """
+import asyncio
+
+
+async def async_function():
+    await asyncio.sleep(1)
+    return "Done"
+
+
+async def main():
+    result = await async_function()
+    print(result)
+
+
+class AsyncClass:
+    async def async_method(self):
+        pass
+    
+    @staticmethod
+    async def async_static_method():
+        pass
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证关键字相关的标签被添加
+        keyword_tags = [tag for tag, start, end in added_tags if tag == "keyword"]
+        assert len(keyword_tags) > 0
+    
+    def test_highlight_context_managers(self):
+        """测试上下文管理器高亮"""
+        python_code = """
+with open("file.txt", "r") as f:
+    content = f.read()
+
+
+class ContextManager:
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
+with ContextManager() as cm:
+    cm.some_method()
+"""
+        
+        # 模拟获取代码内容
+        self.text_widget.get.return_value = python_code
+        
+        # 模拟_add_tag方法
+        added_tags = []
+        
+        def mock_add_tag(tag, start, end):
+            added_tags.append((tag, start, end))
+        
+        self.highlighter._add_tag = mock_add_tag
+        
+        # 执行高亮
+        self.highlighter.highlight()
+        
+        # 验证关键字相关的标签被添加
+        keyword_tags = [tag for tag, start, end in added_tags if tag == "keyword"]
+        assert len(keyword_tags) > 0
 
 
 if __name__ == "__main__":

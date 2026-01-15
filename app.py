@@ -8,6 +8,7 @@ from library.api import Settings
 from library.multi_file_editor import MultiFileEditor
 from library.editor_operations import EditorOperations
 from library.file_handle_manager import get_file_manager, shutdown_file_manager
+from library.plugins import PluginManager
 from ui.main_window import MainWindow
 from ui.file_browser import FileBrowser
 from ui.menu import MenuBar
@@ -128,13 +129,18 @@ class App:
             self.root, self.codearea, self.root.terminal_area, self.multi_editor
         )
         
-        # 创建菜单
-        logger.info("创建菜单")
-        self.menu_bar = MenuBar(self.root, self)
-        
         # 将全局文件树引用附加到root对象上，以便editor_operations可以访问
         logger.info("设置文件树引用")
         self.root.file_tree = self.file_browser.tree
+        
+        # 初始化插件系统
+        logger.info("初始化插件系统")
+        self.plugin_manager = PluginManager()
+        self.plugin_manager.initialize()
+        
+        # 创建菜单
+        logger.info("创建菜单")
+        self.menu_bar = MenuBar(self.root, self)
         
         # 绑定事件
         logger.info("绑定事件")
@@ -285,6 +291,10 @@ class App:
             程序退出时的清理操作
             """
             logger.info("程序正在退出...")
+            
+            # 关闭插件系统
+            logger.info("关闭插件系统")
+            self.plugin_manager.shutdown()
             
             # 关闭文件句柄管理器
             logger.info("关闭文件句柄管理器")
