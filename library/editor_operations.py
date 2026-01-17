@@ -78,9 +78,9 @@ class EditorOperations:
         """文件 > 新建文件"""
         self.file_ops.new_file()
     
-    def open_file(self):
+    def open_file(self, text_widget=None):
         """文件 > 打开文件"""
-        self.file_ops.open_file()
+        self.multi_editor.open_file_in_new_tab()
     
     def save_file(self):
         """文件 > 保存文件"""
