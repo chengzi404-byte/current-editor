@@ -305,9 +305,8 @@ class MultiFileEditor:
         return self.tab_editors[self.current_tab]
 
     def get_current_tab(self): 
-        """获取当前活动的选项卡组件对象""" 
-        current_tab_id = self.notebook.select()  # 获取当前选中标签页的 ID
-        return self.notebook.nametowidget(current_tab_id)  # 转换为组件对象
+        """获取当前活动的选项卡ID""" 
+        return self.notebook.select()  # 返回当前选中标签页的 ID
     
     def get_current_file_path(self):
         """获取当前活动文件的路径"""

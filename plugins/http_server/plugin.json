@@ -1,0 +1,21 @@
+{
+  "name": "http_server",
+  "version": "1.0.0",
+  "author": "Current Editor",
+  "description": "在本地8000端口展示当前Tab对应的HTML页面预览",
+  "entry_point": "main",
+  "permissions": ["access_editor", "execute_commands"],
+  "dependencies": [],
+  "config_schema": {
+    "port": {
+      "type": "integer",
+      "default": 8000,
+      "description": "HTTP服务器端口"
+    },
+    "auto_start": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否自动启动HTTP服务器"
+    }
+  }
+}

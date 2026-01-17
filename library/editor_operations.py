@@ -406,7 +406,12 @@ class EditorOperations:
                 text_widget.delete('1.0', 'end')
                 text_widget.insert('1.0', content)
                 self.current_file_path = file_path  # 更新当前文件路径
-            self.multi_editor.get_notebook().tab(self.multi_editor.get_current_tab(), text=os.path.basename(file_path))
+            
+            # 获取当前标签页ID并检查是否有效
+            current_tab = self.multi_editor.get_current_tab()
+            if current_tab:
+                self.multi_editor.get_notebook().tab(current_tab, text=os.path.basename(file_path))
+            
             self.root.title(f"{os.path.basename(file_path)} - {t('editor_title')}") # 更新窗口标题
         except Exception as e:
             print("Trying to open file but Got exception: ", str(e))

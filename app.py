@@ -135,7 +135,7 @@ class App:
         
         # 初始化插件系统
         logger.info("初始化插件系统")
-        self.plugin_manager = PluginManager()
+        self.plugin_manager = PluginManager(self)
         self.plugin_manager.initialize()
         
         # 创建菜单

@@ -26,7 +26,7 @@ from library.logger import get_logger
 class PluginManager:
     """插件管理器核心类"""
     
-    def __init__(self):
+    def __init__(self, app=None):
         self.logger = get_logger()
         self.plugins_dir = Path(__file__).parent.parent.parent / "plugins"
         self.plugins_config_dir = Path(__file__).parent.parent.parent / "asset" / "plugins_config"
@@ -48,6 +48,9 @@ class PluginManager:
         
         # 插件配置管理
         self._plugin_configs: Dict[str, Dict[str, Any]] = {}
+        
+        # 应用程序实例
+        self._app = app
         
         # 加载插件配置
         self._load_plugins_config()
@@ -450,8 +453,10 @@ class PluginManager:
         loaded_count = self.load_all_plugins()
         self.logger.info(f"共加载了 {loaded_count} 个插件")
         
-        # 启用所有已配置为自动启用的插件
-        # 这里可以读取配置文件，决定哪些插件需要自动启用
+        # 自动启用并激活所有加载的插件
+        for plugin_name in self.list_plugins():
+            self.enable_plugin(plugin_name)
+            self.activate_plugin(plugin_name)
     
     def shutdown(self):
         """关闭插件系统"""
