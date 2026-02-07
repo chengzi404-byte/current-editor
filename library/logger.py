@@ -305,22 +305,27 @@ class AsyncLogger:
     
     def debug(self, msg, *args, **kwargs):
         """记录调试信息"""
+        kwargs.setdefault('stacklevel', 2)
         self.logger.debug(msg, *args, **kwargs)
     
     def info(self, msg, *args, **kwargs):
         """记录一般信息"""
+        kwargs.setdefault('stacklevel', 2)
         self.logger.info(msg, *args, **kwargs)
     
     def warning(self, msg, *args, **kwargs):
         """记录警告信息"""
+        kwargs.setdefault('stacklevel', 2)
         self.logger.warning(msg, *args, **kwargs)
     
     def error(self, msg, *args, **kwargs):
         """记录错误信息"""
+        kwargs.setdefault('stacklevel', 2)
         self.logger.error(msg, *args, **kwargs)
     
     def exception(self, msg, *args, **kwargs):
         """记录异常信息"""
+        kwargs.setdefault('stacklevel', 2)
         self.logger.exception(msg, *args, **kwargs)
     
     def export_crash_logs(self):
