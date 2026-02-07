@@ -230,12 +230,14 @@ class AsyncLogHandler:
         except Exception:
             return False
     
-    def shutdown(self):
+    def shutdown(self, normal_shutdown=True):
         """关闭日志处理器"""
         self.running = False
         self.executor.shutdown(wait=True)
         
         # 等待队列处理完成
+        if not normal_shutdown:
+            return
         self.log_queue.join()
 
 class AsyncLogger:
@@ -330,12 +332,18 @@ class AsyncLogger:
                 '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
             )
             
-            for record in self.crash_logs:
-                self.async_handler.enqueue_log(record)
-            
+            # 队列是单独线程检查，但是线程更新可能不及时！必须同步写入日志：
+            filename = self.async_handler._get_log_file_path()
+            path, name = os.path.split(filename)
+            with open(f'{path}\\crash_log-{name}', 'w', encoding='utf-8') as f:
+                for record in self.crash_logs:
+                    f.write(formatter.format(record) + '\n')
+                    f.flush()
+
             # 清空崩溃日志
             self.crash_logs = []
-    
+            print('日志写出完毕')
+
     def shutdown(self, normal_exit=True):
         """关闭日志记录器"""
         # 设置退出类型
@@ -343,7 +351,7 @@ class AsyncLogger:
         
         # 如果是仅崩溃模式且有日志，导出它们
         self.export_crash_logs()
-        self.async_handler.shutdown()
+        self.async_handler.shutdown(normal_exit)
 
 def setup_logger(log_dir="./logs", name='Phoenix Editor', level=logging.DEBUG, crash_only=False):
     """设置异步日志记录器"""
