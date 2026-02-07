@@ -124,7 +124,7 @@ class FileHandleManager:
         self._running = False
         self.close_all()
         if self._cleanup_thread.is_alive():
-            self._cleanup_thread.join(timeout=5)
+            self._cleanup_thread.join(timeout=2)
     
     def get_open_file_count(self):
         """
