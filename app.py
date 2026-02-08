@@ -126,7 +126,7 @@ class App:
         # 初始化编辑器操作
         logger.info("初始化编辑器操作")
         self.editor_ops = EditorOperations(
-            self.root, self.codearea, self.root.terminal_area, self.multi_editor
+            self.root, self.codearea, self.root.terminal_area, self.root.terminal_area, self.multi_editor
         )
         
         # 将全局文件树引用附加到root对象上，以便editor_operations可以访问
@@ -291,6 +291,9 @@ class App:
             程序退出时的清理操作
             """
             logger.info("程序正在退出...")
+
+            # 立即关闭主窗口
+            self.root.withdraw()
             
             # 关闭插件系统
             logger.info("关闭插件系统")

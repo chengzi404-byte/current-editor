@@ -35,7 +35,7 @@ class EditorOperations:
     注意：这是一个适配器类，用于将旧的API调用转发到新的操作类
     """
     
-    def __init__(self, root, codearea, commandarea, multi_editor=None):
+    def __init__(self, root, codearea, commandarea, inputarea, multi_editor=None):
         """
         初始化编辑器操作
         
@@ -55,6 +55,7 @@ class EditorOperations:
         # 初始化新的操作类
         self.file_ops = FileOperations()
         self.edit_ops = EditOperations(codearea, commandarea)
+        self.inputarea = inputarea
         self.terminal_ops = TerminalOperations(commandarea)
         self.settings_manager = SettingsManager(root, codearea, commandarea, t("settings"))
 #       self.ai_service = AIService(ai_display, ai_input, ai_send_button, ai_queue, ai_loading)
