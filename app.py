@@ -126,8 +126,7 @@ class App:
         # 初始化编辑器操作
         logger.info("初始化编辑器操作")
         self.editor_ops = EditorOperations(
-            self.root, self.code[Bug]: 另存为文件时崩溃
-https://gitee.com/chengzi404-byte/current-editor/issues/IDPN1Larea, self.root.terminal_area, self.root.terminal_area, self.multi_editor
+            self.root, self.codearea, self.root.terminal_area, self.root.terminal_area, self.multi_editor
         )
         
         # 将全局文件树引用附加到root对象上，以便editor_operations可以访问
