@@ -8,7 +8,7 @@ Editor Operations Module
 import subprocess
 import sys
 import zipfile
-from library.api import ConfigManager, Settings
+from library.api import ConfigManager, EditorConfig, Settings
 from pathlib import Path
 from tkinter import (
     END, messagebox, filedialog
@@ -73,6 +73,7 @@ class EditorOperations:
         self.file_path = "temp_script.txt"
         self.copy_msg = ""
         self.config = ConfigManager()
+        self.editor_conf = EditorConfig(self.config)
     
     # -------------------- 文件操作 --------------------
     def new_file(self):
@@ -85,11 +86,22 @@ class EditorOperations:
     
     def save_file(self):
         """文件 > 保存文件"""
-        self.file_ops.save_file()
+        if self.file_path == "temp_script.txt" or (not os.path.exists(self.file_path)):
+            self.save_as_file()
+            return
+        self.file_ops.write_file(self.file_path, self.codearea.get("1.0", END))
     
     def save_as_file(self):
         """文件 > 另存为"""
-        self.file_ops.save_as_file()
+        filepath = filedialog.asksaveasfilename(
+            title=t("save_as"),
+            filetypes=self.editor_conf.save_file_options(),
+            initialdir="./temp",
+            defaultextension=".txt"
+        )
+        if filepath:
+            self.file_path = filepath
+            self.file_ops.write_file(self.file_path, self.codearea.get("1.0", END))
     
     def autosave(self):
         """文件 > 自动保存"""
@@ -412,35 +424,35 @@ class EditorOperations:
         except Exception as e:
             print("Trying to open file but Got exception: ", str(e))
 
-    def save_as_file(self, text_widget):
-        """
-        保存文件为...
-        """
-        file_path = filedialog.asksaveasfilename(title=t("save_file"), filetypes=[(t("all_files"), "*.*")])
-        if not file_path:
-            return None
+    # def save_as_file(self, text_widget):
+    #     """
+    #     保存文件为...
+    #     """
+    #     file_path = filedialog.asksaveasfilename(title=t("save_file"), filetypes=[(t("all_files"), "*.*")])
+    #     if not file_path:
+    #         return None
         
-        try:
-            with open(file_path, 'w', encoding='utf-8') as file:
-                content = text_widget.get('1.0', 'end')
-                file.write(content)
-        except Exception as e:
-            print("Trying to save file but Got exception: ", str(e))
+    #     try:
+    #         with open(file_path, 'w', encoding='utf-8') as file:
+    #             content = text_widget.get('1.0', 'end')
+    #             file.write(content)
+    #     except Exception as e:
+    #         print("Trying to save file but Got exception: ", str(e))
 
-    def save_file(self, text_widget):
-        """
-        保存文件
-        """
-        if not self.current_file_path:
-            self.save_as_file(text_widget)
-            return
+    # def save_file(self, text_widget):
+    #     """
+    #     保存文件
+    #     """
+    #     if not self.current_file_path:
+    #         self.save_as_file(text_widget)
+    #         return
         
-        try:
-            with open(self.current_file_path, 'w', encoding='utf-8') as file:
-                content = text_widget.get('1.0', 'end')
-                file.write(content)
-        except Exception as e:
-            print("Trying to save file but Got exception: ", str(e))
+    #     try:
+    #         with open(self.current_file_path, 'w', encoding='utf-8') as file:
+    #             content = text_widget.get('1.0', 'end')
+    #             file.write(content)
+    #     except Exception as e:
+    #         print("Trying to save file but Got exception: ", str(e))
 
     @property
     def text_widget(self):

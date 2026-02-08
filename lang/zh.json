@@ -155,6 +155,9 @@
   "help.troubleshooting.issue-theme-desc": "如果主题设置无效，请检查是否已正确安装并配置了主题插件。",
   "help.troubleshooting.plugin-errors": "插件错误",
   "help.troubleshooting.encoding-errors": "编码错误",
-  "help.troubleshooting.file-errors": "文件错误"
+  "help.troubleshooting.file-errors": "文件错误",
+  "save_as": "另存为",
+  "open_file": "打开文件",
+  "file": "文件"
 }
 
