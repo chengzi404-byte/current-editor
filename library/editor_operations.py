@@ -215,7 +215,7 @@ class EditorOperations:
                             continue
                         
                         # 使用安全的文件名
-                        safe_title = "".join(c if c.isalnum() or c in ('_', '-', '.') else '_' for c in title)
+                        safe_title = "".join(c if c.isalnum() or c in ('_', '-', '.') else '' for c in title)
                         file_path = save_dir / f"{safe_title}.txt"
                         print(f"  准备保存到: {file_path}")
                         
@@ -325,31 +325,6 @@ class EditorOperations:
         """打开设置面板"""
         self.settings_manager.open_settings_panel(codehighlighter, codehighlighter2)
     
-    # -------------------- AI功能 --------------------
-    def send_ai_request_to_api(self, prompt, apikey):
-        """发送AI请求到API"""
-        self.ai_service.send_ai_request_to_api(prompt, apikey)
-    
-    def process_ai_responses(self):
-        """处理AI响应"""
-        self.ai_service.process_ai_responses()
-    
-    def display_ai_response(self, response):
-        """显示AI响应"""
-        self.ai_service.display_ai_response(response)
-    
-    def update_ai_loading(self):
-        """更新AI加载状态"""
-        self.ai_service.update_ai_loading()
-    
-    def on_ai_input_enter(self, event):
-        """AI输入回车事件"""
-        self.ai_service.on_ai_input_enter(event)
-    
-    def send_ai_request(self):
-        """发送AI请求"""
-        self.ai_service.send_ai_request()
-    
     # -------------------- 遗留功能 --------------------
     def download_plugin(self):
         """插件 > 下载插件"""
@@ -423,36 +398,6 @@ class EditorOperations:
             self.root.title(f"{os.path.basename(file_path)} - {t('editor_title')}") # 更新窗口标题
         except Exception as e:
             print("Trying to open file but Got exception: ", str(e))
-
-    # def save_as_file(self, text_widget):
-    #     """
-    #     保存文件为...
-    #     """
-    #     file_path = filedialog.asksaveasfilename(title=t("save_file"), filetypes=[(t("all_files"), "*.*")])
-    #     if not file_path:
-    #         return None
-        
-    #     try:
-    #         with open(file_path, 'w', encoding='utf-8') as file:
-    #             content = text_widget.get('1.0', 'end')
-    #             file.write(content)
-    #     except Exception as e:
-    #         print("Trying to save file but Got exception: ", str(e))
-
-    # def save_file(self, text_widget):
-    #     """
-    #     保存文件
-    #     """
-    #     if not self.current_file_path:
-    #         self.save_as_file(text_widget)
-    #         return
-        
-    #     try:
-    #         with open(self.current_file_path, 'w', encoding='utf-8') as file:
-    #             content = text_widget.get('1.0', 'end')
-    #             file.write(content)
-    #     except Exception as e:
-    #         print("Trying to save file but Got exception: ", str(e))
 
     @property
     def text_widget(self):
