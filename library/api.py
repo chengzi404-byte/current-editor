@@ -7,6 +7,7 @@ import json
 import pathlib
 from pathlib import Path
 from typing import Dict, Any, Optional
+from i18n import t  # type: ignore
 
 
 class ConfigManager:
@@ -142,6 +143,15 @@ class EditorConfig:
         """更改编辑器设置"""
         self._config.set(f"editor.{key}", value)
 
+    def save_file_options(self) -> list[Any]:
+        """保存所有文件编辑器设置"""
+        # 注：该内容会跟随版本更新而更新
+        with open("./asset/supports.json", "r", encoding="utf-8") as fp:
+            raw = json.load(fp)
+        res = []
+        for name, ext in zip(raw["supports_name"], raw["supports_ext"]):
+            res.append((f"{name}" + t("file"), f"*.{ext[0]}" if isinstance(ext, list) else [f"*.{e}]" for e in ext]))
+        return res
 
 class HighlighterConfig:
     """语法高亮配置类"""
