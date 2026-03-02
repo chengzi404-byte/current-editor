@@ -1,13 +1,16 @@
 {
     "editor.file-encoding": "utf-8",
-    "editor.lang": "Chinese",
+    "editor.lang": "zh",
     "editor.font": "Consolas",
     "editor.fontsize": 12,
     "editor.file-path": "./temp",
     "highlighter.syntax-highlighting": {
-        "theme": "github-dark",
+        "theme": "vscode-light",
         "enable-type-hints": true,
         "enable-docstrings": true,
         "code": "python"
-    }
+    },
+    "run.timeout": 1000,
+    "run.racemode": false,
+    "apikey": ""
 }
