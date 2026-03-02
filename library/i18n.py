@@ -83,7 +83,7 @@ class I18n:
         }
         
         zh_translations = {
-            "app_title": "当前编辑器",
+            "app_title": "Current Editor",
             "file": "文件",
             "new_file": "新建文件",
             "open_file": "打开文件",
