@@ -61,23 +61,25 @@ class LSPClient(QObject):
         return True
     
     def _read_output(self):
-        buffer = ""
-        
+        buffer = bytearray()
         while self._running and self.process:
             try:
-                char = self.process.stdout.read(1)
-                if not char:
+                data = self.process.stdout.read(1024)  # 批量读取
+                if not data:
                     break
                 
-                buffer += char
+                buffer.extend(data)
+                if b'\n' in buffer:
+                    lines = buffer.split(b'\n')
+                    buffer = lines[-1]  # 保留未处理的部分
+                    for line in lines[:-1]:
+                        try:
+                            message = json.loads(line.decode('utf-8'))
+                            self._handle_message(message)
+                        except (json.JSONDecodeError, UnicodeDecodeError):
+                            continue
                 
-                if char == '\n':
-                    try:
-                        message = json.loads(buffer)
-                        self._handle_message(message)
-                        buffer = ""
-                    except json.JSONDecodeError:
-                        pass
+                # Removed redundant newline check since we handle it in bulk read
             except Exception as e:
                 print(f"Read error: {e}")
                 break
