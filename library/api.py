@@ -9,11 +9,13 @@ class ConfigManager:
         self._settings = self._load_settings()
     
     def _load_settings(self) -> Dict[str, Any]:
-        try:
-            with open(self.config_file, "r", encoding="utf-8") as fp:
-                return json.load(fp)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return self._get_default_settings()
+        if not hasattr(self, '_cached_settings'):
+            try:
+                with open(self.config_file, "r", encoding="utf-8") as fp:
+                    self._cached_settings = json.load(fp)
+            except (FileNotFoundError, json.JSONDecodeError):
+                self._cached_settings = self._get_default_settings()
+        return self._cached_settings
     
     def _get_default_settings(self) -> Dict[str, Any]:
         return {

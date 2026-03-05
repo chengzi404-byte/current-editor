@@ -323,6 +323,14 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, t("error"), f"Failed to open file: {str(e)}")
             logger.error(f"Failed to open file: {str(e)}")
     
+    def __init__(self):
+        super().__init__()
+        # ... 其他初始化代码
+        self._last_lsp_update = 0
+        self._lsp_update_timer = QTimer()
+        self._lsp_update_timer.setSingleShot(True)
+        self._lsp_update_timer.timeout.connect(self._delayed_lsp_update)
+
     def on_text_changed(self):
         if not self.tab_widget.tabText(self.tab_widget.currentIndex()).endswith("*"):
             self.tab_widget.setTabText(
@@ -330,6 +338,10 @@ class MainWindow(QMainWindow):
                 self.tab_widget.tabText(self.tab_widget.currentIndex()) + "*"
             )
         
+        # 延迟500ms发送LSP更新，避免频繁触发
+        self._lsp_update_timer.start(500)
+
+    def _delayed_lsp_update(self):
         if self.lsp_client and self.lsp_client.is_ready() and self.current_file_path:
             content = self.editor_widget.toPlainText()
             uri = f"file:///{self.current_file_path.replace(os.sep, '/')}"

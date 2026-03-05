@@ -80,14 +80,23 @@ class LSPHighlighter(QSyntaxHighlighter):
             print(f"LSP initialization failed: {e}")
             self.lsp_ready = False
     
+    def __init__(self, parent, theme_file=None):
+        super().__init__(parent)
+        self.document = parent.document()
+        self._default_format = None  # 缓存默认格式
+        self.formats = {}
+        self._load_theme(theme_file)
+        self.lsp_ready = False
+        self._init_lsp()
+
     def highlightBlock(self, text):
         if not text:
             return
         
-        base_fg = self.base_format.foreground().color().name()
-        
-        default_format = QTextCharFormat()
-        default_format.setForeground(QColor(base_fg))
+        if self._default_format is None:
+            base_fg = self.base_format.foreground().color().name()
+            self._default_format = QTextCharFormat()
+            self._default_format.setForeground(QColor(base_fg))
         
         self.setFormat(0, len(text), default_format)
         
