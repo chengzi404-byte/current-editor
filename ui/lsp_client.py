@@ -79,13 +79,7 @@ class LSPClient(QObject):
                         except (json.JSONDecodeError, UnicodeDecodeError):
                             continue
                 
-                if char == '\n':
-                    try:
-                        message = json.loads(buffer)
-                        self._handle_message(message)
-                        buffer = ""
-                    except json.JSONDecodeError:
-                        pass
+                # Removed redundant newline check since we handle it in bulk read
             except Exception as e:
                 print(f"Read error: {e}")
                 break

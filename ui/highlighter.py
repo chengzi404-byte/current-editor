@@ -98,12 +98,12 @@ class LSPHighlighter(QSyntaxHighlighter):
             self._default_format = QTextCharFormat()
             self._default_format.setForeground(QColor(base_fg))
         
-        self.setFormat(0, len(text), default_format)
+        self.setFormat(0, len(text), self._default_format)
         
         patterns = self._get_patterns()
         
         for token_type, pattern in patterns:
-            fmt = self.formats.get(token_type, default_format)
+            fmt = self.formats.get(token_type, self._default_format)
             
             for match in pattern.finditer(text):
                 start = match.start()
