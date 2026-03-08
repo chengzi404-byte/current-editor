@@ -1,0 +1,40 @@
+name: 功能建议
+description: 对本项目提出一个功能建议
+title: "[Feature]: "
+labels: ["enhancement", "feature"]
+body:
+  - type: markdown
+    attributes:
+      value: "## 功能建议"
+  - type: markdown
+    attributes:
+      value: "\n功能类型："
+  - type: dropdown
+    id: type
+    attributes:
+      label: 功能类型
+      description: 请选择功能类型
+      options:
+        - Docs 文档
+        - Feature 功能
+        - Optimization 优化
+      required: true
+  - type: markdown
+    attributes:
+      value: "\n功能描述："
+  - type: textarea
+    id: reporo
+    attributes:
+      label: 功能描述
+      description: 请描述您的功能建议
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "\n其他信息："
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他
+      description: 其他信息
+      
