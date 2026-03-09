@@ -110,7 +110,7 @@ class App:
         
         # 创建多文件编辑器 - 需要在文件浏览器之前创建
         logger.info("创建多文件编辑器")
-        self.multi_editor = MultiFileEditor(self.root.editor_frame, self.root.terminal_area, None, None)
+        self.multi_editor = MultiFileEditor(self.root.editor_frame, self.root.flake8_tree, None, None)
         
         # 创建文件浏览器 - 现在可以安全访问multi_editor
         logger.info("创建文件浏览器")
@@ -126,7 +126,7 @@ class App:
         # 初始化编辑器操作
         logger.info("初始化编辑器操作")
         self.editor_ops = EditorOperations(
-            self.root, self.codearea, self.root.terminal_area, self.root.terminal_area, self.multi_editor
+            self.root, self.codearea, self.root.flake8_tree, self.root.flake8_tree, self.multi_editor
         )
         
         # 将全局文件树引用附加到root对象上，以便editor_operations可以访问
@@ -244,15 +244,6 @@ class App:
             self.codehighlighter.set_theme(theme_data)
             self.codehighlighter.highlight()
             logger.info("代码高亮器初始化完成")
-            
-            # 初始化终端高亮器
-            self.codehighlighter2 = highlighter_factory.create_highlighter(self.root.terminal_area, "log")
-            if Settings.Highlighter.syntax_highlighting()["theme"] in dark_themes: 
-                self.codehighlighter2.set_theme(dark_terminal_theme)
-                logger.info("使用深色终端主题")
-            else: 
-                self.codehighlighter2.set_theme(light_terminal_theme)
-                logger.info("使用浅色终端主题")
 
             def on_key(event):
                 # Process auto-save
