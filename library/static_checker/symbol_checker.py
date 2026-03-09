@@ -1,12 +1,17 @@
 """
 符号定义检查器
 用于检查函数、类、变量等标识符的定义与引用关系
+包含工厂模式和管理器功能
 """
 
-from typing import List, Optional, Dict, Set
+from typing import List, Optional, Dict, Set, Type
+from tkinter import Toplevel, Label, Button, Frame
 from library.static_checker.base import BaseStaticChecker, StaticCheckError
 import ast
 import re
+import os
+import json
+import time
 
 
 class SymbolChecker(BaseStaticChecker):
@@ -14,18 +19,28 @@ class SymbolChecker(BaseStaticChecker):
     符号定义检查器
     检查函数、类、变量等标识符的定义与引用关系
     """
-    
+
+    SUPPORTED_LANGUAGES = [
+        "python", "javascript", "typescript", "java", "c", "cpp",
+        "csharp", "go", "ruby", "php"
+    ]
+
+    LANGUAGE_EXTENSIONS = {
+        "javascript": [".js"],
+        "typescript": [".ts", ".tsx"],
+        "python": [".py", ".pyw"],
+        "java": [".java"],
+        "c": [".c"],
+        "cpp": [".cpp", ".cc", ".cxx", ".h", ".hpp"],
+        "csharp": [".cs"],
+        "go": [".go"],
+        "ruby": [".rb"],
+        "php": [".php"],
+    }
+
     def __init__(self, language: str, editor_widget=None):
-        """
-        初始化符号定义检查器
-        
-        Args:
-            language: 支持的编程语言
-            editor_widget: 编辑器组件（可选）
-        """
         super().__init__(language, editor_widget)
-        
-        # 符号表，用于存储标识符的定义信息
+
         self.symbol_table: Dict[str, Dict] = {
             "global": {
                 "variables": set(),
@@ -34,31 +49,19 @@ class SymbolChecker(BaseStaticChecker):
             },
             "functions": {}
         }
-        
-        # 支持的语言
-        self.supported_languages = [
-            "python", "javascript", "typescript", "java", "c", "cpp", 
-            "csharp", "go", "ruby", "php"
-        ]
-    
+
+        self.supported_languages = self.SUPPORTED_LANGUAGES
+
+        self._flake8_cache = {}
+        self._flake8_cache_timeout = 5
+        self._last_flake8_call = 0
+
     def check(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        执行符号定义检查
-        
-        Args:
-            code: 要检查的代码内容
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
         self.clear_errors()
-        
-        # 只处理支持的语言
+
         if self.language not in self.supported_languages:
             return self.get_errors()
-        
-        # 根据语言类型调用对应的检查方法
+
         if self.language == "python":
             return self._check_python_code(code, file_path)
         elif self.language in ["javascript", "typescript"]:
@@ -75,150 +78,86 @@ class SymbolChecker(BaseStaticChecker):
             return self._check_ruby_code(code, file_path)
         elif self.language == "php":
             return self._check_php_code(code, file_path)
-        
+
         return self.get_errors()
-    
-    def __init__(self, language: str, editor_widget=None):
-        """
-        初始化符号定义检查器
-        
-        Args:
-            language: 支持的编程语言
-            editor_widget: 编辑器组件（可选）
-        """
-        super().__init__(language, editor_widget)
-        
-        # 符号表，用于存储标识符的定义信息
-        self.symbol_table: Dict[str, Dict] = {
-            "global": {
-                "variables": set(),
-                "functions": set(),
-                "classes": set()
-            },
-            "functions": {}
-        }
-        
-        # 支持的语言
-        self.supported_languages = [
-            "python", "javascript", "typescript", "java", "c", "cpp", 
-            "csharp", "go", "ruby", "php"
-        ]
-        
-        # flake8缓存机制
-        self._flake8_cache = {}
-        self._flake8_cache_timeout = 5  # 缓存超时时间（秒）
-        self._last_flake8_call = 0
-    
+
     def _check_python_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查Python代码的符号定义（使用flake8）
-        
-        Args:
-            code: 要检查的Python代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
         try:
             print(f"使用flake8检查Python代码，代码长度: {len(code)}")
-            
-            # 使用flake8进行代码检查
+
             import subprocess
             import tempfile
-            import os
-            import time
-            
-            # 计算代码哈希，用于缓存
+
             code_hash = hash(code)
             current_time = time.time()
-            
-            # 检查缓存是否有效
+
             if code_hash in self._flake8_cache and \
                (current_time - self._flake8_cache[code_hash]['timestamp'] < self._flake8_cache_timeout):
                 print(f"使用缓存的flake8结果")
-                # 从缓存中获取错误
                 self.errors = self._flake8_cache[code_hash]['errors'].copy()
                 return self.get_errors()
-            
-            # 将代码按行分割，用于准确计算结束位置
+
             code_lines = code.split('\n')
-            
-            # 创建临时文件
+
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
                 f.write(code)
                 temp_file_path = f.name
-            
+
             try:
-                # 运行flake8命令
                 result = subprocess.run(
-                    ["python", "-m", "flake8", 
-                     "--format", "%(row)d,%(col)d,%(code)s,%(text)s", 
+                    ["flake8",
+                     "--format", "%(row)d,%(col)d,%(code)s,%(text)s",
                      temp_file_path],
                     capture_output=True,
                     text=True,
-                    timeout=3  # 3秒超时，避免无限等待
+                    timeout=3
                 )
-                
+
                 print(f"flake8返回码: {result.returncode}")
                 print(f"flake8输出: {result.stdout}")
                 print(f"flake8错误: {result.stderr}")
-                
-                # 解析flake8输出
+
                 if result.stdout:
                     for line in result.stdout.strip().split('\n'):
                         if line.strip():
                             self._parse_flake8_output(line, code_lines)
-                
+
             finally:
-                # 删除临时文件
                 os.unlink(temp_file_path)
-                
+
             print(f"flake8检查完成，错误数量: {len(self.errors)}")
-            
-            # 缓存结果
+
             self._flake8_cache[code_hash] = {
                 'timestamp': current_time,
                 'errors': self.errors.copy()
             }
-            
-            # 限制缓存大小
+
             if len(self._flake8_cache) > 10:
-                # 移除最旧的缓存项
-                oldest_key = min(self._flake8_cache.keys(), 
+                oldest_key = min(self._flake8_cache.keys(),
                                key=lambda k: self._flake8_cache[k]['timestamp'])
                 del self._flake8_cache[oldest_key]
                 print(f"移除最旧的flake8缓存项，当前缓存大小: {len(self._flake8_cache)}")
-            
+
         except subprocess.TimeoutExpired:
             print("flake8检查超时")
         except Exception as e:
-            # 其他错误，记录但不影响检查
             print(f"flake8检查错误: {str(e)}")
             import traceback
             traceback.print_exc()
-        
+
         return self.get_errors()
-    
+
     def _parse_flake8_output(self, output_line: str, code_lines: list):
-        """
-        解析flake8输出行，转换为StaticCheckError对象
-        
-        Args:
-            output_line: flake8输出行
-        """
         try:
-            # 解析输出行，格式: 行号,列号,错误码,错误信息
             parts = output_line.split(',')
             if len(parts) < 4:
                 return
-            
+
             line = int(parts[0])
             column = int(parts[1])
             error_code = parts[2]
             error_message = ','.join(parts[3:])
-            
-            # 根据错误码确定错误类型
+
             if error_code.startswith('E'):
                 error_type = "error"
                 severity = "error"
@@ -237,26 +176,19 @@ class SymbolChecker(BaseStaticChecker):
             else:
                 error_type = "lint-error"
                 severity = "warning"
-            
-            # 准确计算结束位置
+
             end_line = line
             end_column = column
-            
-            # 如果行号有效，尝试获取该行内容
+
             if 1 <= line <= len(code_lines):
-                line_content = code_lines[line - 1]  # 列表索引从0开始
-                
-                # 根据错误类型确定结束位置
-                if error_code.startswith('E2') or error_code.startswith('E7'):  # 空格错误
-                    # 单个字符错误
+                line_content = code_lines[line - 1]
+
+                if error_code.startswith('E2') or error_code.startswith('E7'):
                     end_column = column + 1
-                elif error_code.startswith('E5'):  # 行太长
-                    # 整行错误
+                elif error_code.startswith('E5'):
                     end_column = len(line_content)
-                elif error_code.startswith('F'):  # 未使用的变量/导入
-                    # 尝试找到变量名的结束位置
+                elif error_code.startswith('F'):
                     if column < len(line_content):
-                        # 从column位置开始，找到变量名的结束位置
                         for i in range(column, len(line_content)):
                             if not (line_content[i].isalnum() or line_content[i] == '_'):
                                 end_column = i
@@ -264,146 +196,105 @@ class SymbolChecker(BaseStaticChecker):
                         else:
                             end_column = len(line_content)
                 else:
-                    # 默认处理：假设错误长度为1个字符
                     end_column = column + 1
-            
-            # 确保结束位置不超过行尾
+
             end_column = min(end_column, len(code_lines[line - 1])) if 1 <= line <= len(code_lines) else column + 1
-            
-            # 添加错误
+
             self._add_error(
                 line=line,
-                column=column + 1,  # flake8使用0-based列索引，我们使用1-based
+                column=column + 1,
                 end_line=end_line,
-                end_column=end_column + 1,  # flake8使用0-based列索引，我们使用1-based
+                end_column=end_column + 1,
                 error_type=error_type,
                 error_message=f"{error_code}: {error_message}",
                 severity=severity
             )
-            
+
             print(f"错误位置: {line}:{column+1} 到 {end_line}:{end_column+1}")
-            
             print(f"解析flake8错误: 行{line}, 列{column} - {error_code}: {error_message}")
-            
+
         except Exception as e:
             print(f"解析flake8输出错误: {str(e)}")
             import traceback
             traceback.print_exc()
-    
+
     def _build_python_symbol_table(self, tree: ast.AST):
-        """
-        构建Python代码的符号表
-        
-        Args:
-            tree: Python代码的AST树
-        """
-        # 重置符号表
         self.symbol_table = {
             "global": {
                 "variables": set(),
                 "functions": set(),
                 "classes": set()
             },
-            "functions": {}  # 存储函数参数和局部变量
+            "functions": {}
         }
-        
-        # 遍历AST，收集符号定义
+
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
-                # 函数定义
                 self.symbol_table["global"]["functions"].add(node.name)
-                
-                # 收集函数参数
+
                 func_params = set()
-                # 收集普通参数
                 for arg in node.args.args:
                     func_params.add(arg.arg)
-                # 收集*args参数
                 if node.args.vararg:
                     func_params.add(node.args.vararg.arg)
-                # 收集**kwargs参数
                 if node.args.kwarg:
                     func_params.add(node.args.kwarg.arg)
-                # 收集关键字参数
                 for kwarg in node.args.kwonlyargs:
                     func_params.add(kwarg.arg)
-                
-                # 保存函数参数
+
                 self.symbol_table["functions"][node.name] = func_params
             elif isinstance(node, ast.ClassDef):
-                # 类定义
                 self.symbol_table["global"]["classes"].add(node.name)
-                
-                # 收集类方法
+
                 for item in node.body:
                     if isinstance(item, ast.FunctionDef):
                         method_name = item.name
                         self.symbol_table["global"]["functions"].add(method_name)
-                        
-                        # 收集方法参数
+
                         method_params = set()
-                        # 收集普通参数
                         for arg in item.args.args:
                             method_params.add(arg.arg)
-                        # 收集*args参数
                         if item.args.vararg:
                             method_params.add(item.args.vararg.arg)
-                        # 收集**kwargs参数
                         if item.args.kwarg:
                             method_params.add(item.args.kwarg.arg)
-                        # 收集关键字参数
                         for kwarg in item.args.kwonlyargs:
                             method_params.add(kwarg.arg)
-                        
-                        # 保存方法参数
+
                         self.symbol_table["functions"][method_name] = method_params
             elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-                # 变量定义
                 self.symbol_table["global"]["variables"].add(node.id)
             elif isinstance(node, ast.Import):
-                # 导入语句
                 for alias in node.names:
                     if alias.asname:
                         self.symbol_table["global"]["variables"].add(alias.asname)
                     else:
                         self.symbol_table["global"]["variables"].add(alias.name)
             elif isinstance(node, ast.ImportFrom):
-                # 从模块导入
                 for alias in node.names:
                     if alias.asname:
                         self.symbol_table["global"]["variables"].add(alias.asname)
                     else:
                         self.symbol_table["global"]["variables"].add(alias.name)
-    
+
     def _check_python_symbol_references(self, tree: ast.AST):
-        """
-        检查Python代码中的符号引用
-        
-        Args:
-            tree: Python代码的AST树
-        """
-        # 遍历AST，检查符号引用
         for node in ast.walk(tree):
             if isinstance(node, ast.Name):
-                # 检查符号定义
                 symbol_name = node.id
-                
-                # 只检查加载操作（变量引用），不检查存储操作（变量定义）
+
                 if isinstance(node.ctx, ast.Load):
                     print(f"检查符号引用: {symbol_name}, 位置: {node.lineno}:{node.col_offset}")
-                    
-                    # 检查是否在符号表中
+
                     in_symbol_table = (
                         symbol_name in self.symbol_table["global"]["variables"] or
                         symbol_name in self.symbol_table["global"]["functions"] or
                         symbol_name in self.symbol_table["global"]["classes"] or
                         self._is_builtin(symbol_name)
                     )
-                    
+
                     print(f"符号 '{symbol_name}' 在符号表中: {in_symbol_table}")
-                    
+
                     if not in_symbol_table:
-                        # 添加未定义符号错误
                         print(f"添加未定义符号错误: {symbol_name}")
                         self._add_error(
                             line=node.lineno,
@@ -414,12 +305,10 @@ class SymbolChecker(BaseStaticChecker):
                             error_message=f"未定义的符号 '{symbol_name}'"
                         )
             elif isinstance(node, ast.Call):
-                # 检查函数调用
                 if isinstance(node.func, ast.Name):
                     func_name = node.func.id
                     print(f"检查函数调用: {func_name}, 位置: {node.func.lineno}:{node.func.col_offset}")
-                    
-                    # 检查函数是否定义
+
                     if (func_name not in self.symbol_table["global"]["functions"] and
                         func_name not in self.symbol_table["global"]["classes"] and
                         not self._is_builtin(func_name)):
@@ -432,273 +321,524 @@ class SymbolChecker(BaseStaticChecker):
                             error_type="undefined-function",
                             error_message=f"未定义的函数调用 '{func_name}'"
                         )
-    
+
     def _is_builtin(self, symbol_name: str) -> bool:
-        """
-        检查符号是否为内置符号
-        
-        Args:
-            symbol_name: 符号名称
-            
-        Returns:
-            如果是内置符号返回True，否则返回False
-        """
-        # 根据语言获取对应的内置符号列表
         builtins_map = {
             "python": {
-                # Python内置函数、关键字和特殊变量
-                "print", "input", "len", "range", "type", "int", "float", 
-                "str", "bool", "list", "dict", "set", "tuple", "lambda", 
-                "zip", "map", "filter", "enumerate", "reversed", "sorted", 
-                "sum", "max", "min", "abs", "round", "pow", "divmod", 
-                "all", "any", "isinstance", "issubclass", "id", "hex", 
-                "oct", "bin", "chr", "ord", "ascii", "repr", "eval", 
-                "exec", "compile", "open", "close", "file", 
-                # 关键字
-                "if", "else", "elif", "for", "while", "try", "except", 
-                "finally", "with", "break", "continue", "return", "def", 
-                "class", "lambda", "async", "await", "import", "from", 
-                "as", "global", "nonlocal", "pass", "yield", "del", 
-                "assert", "raise", "try", "except", "finally", "with", 
-                "in", "not", "and", "or", "is", "is not", "==", "!=", 
-                "+=", "-=", "*=", "/=", "//=", "%=", "**=", "&=", "|=", 
-                "^=", "<<=", ">>=", "+=", "-=", "*=", "/=", "//=", "%=", 
-                "**=", "&=", "|=", "^=", "<<=", ">>=", "True", "False", "None",
-                # 特殊变量
-                "__name__", "__file__", "__doc__", "__package__", "__init__", 
-                "__str__", "__repr__", "__dict__", "__class__", "__module__", 
-                "__bases__", "__mro__", "__subclasses__", "__getattr__", 
-                "__setattr__", "__delattr__", "__call__", "__len__", "__getitem__", 
-                "__setitem__", "__delitem__", "__iter__", "__next__", "__contains__", 
-                "__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", 
-                "__add__", "__sub__", "__mul__", "__truediv__", "__floordiv__", 
-                "__mod__", "__pow__", "__and__", "__or__", "__xor__", "__lshift__", 
-                "__rshift__", "__neg__", "__pos__", "__abs__", "__invert__", 
-                "__complex__", "__int__", "__float__", "__round__", "__floor__", 
-                "__ceil__", "__trunc__", "__index__", "__enter__", "__exit__", 
-                "__await__", "__aiter__", "__anext__", "__aenter__", "__aexit__"
+                "print", "input", "len", "range", "type", "int", "float",
+                "str", "bool", "list", "dict", "set", "tuple", "lambda",
+                "zip", "map", "filter", "enumerate", "reversed", "sorted",
+                "sum", "max", "min", "abs", "round", "pow", "divmod",
+                "all", "any", "isinstance", "issubclass", "id", "hex",
+                "oct", "bin", "chr", "ord", "ascii", "repr", "eval",
+                "exec", "compile", "open", "close", "file",
+                "if", "else", "elif", "for", "while", "try", "except",
+                "finally", "with", "break", "continue", "return", "def",
+                "class", "async", "await", "import", "from",
+                "as", "global", "nonlocal", "pass", "yield", "del",
+                "assert", "raise", "in", "not", "and", "or", "is",
+                "True", "False", "None",
+                "__name__", "__file__", "__doc__", "__package__", "__init__",
+                "__str__", "__repr__", "__dict__", "__class__", "__module__",
             },
             "javascript": {
-                # JavaScript内置函数和关键字
-                "console", "log", "alert", "prompt", "confirm", "document", "window", 
-                "Math", "Date", "Array", "Object", "String", "Number", "Boolean", 
-                "Function", "RegExp", "JSON", "Promise", "async", "await", "let", "const", 
-                "var", "if", "else", "for", "while", "do", "switch", "case", "default", 
-                "break", "continue", "return", "function", "class", "extends", "super", 
-                "constructor", "this", "new", "delete", "typeof", "instanceof", "in", 
-                "null", "undefined", "true", "false", "try", "catch", "finally", "throw", 
-                "export", "import", "from", "as", "static", "async", "await", "of", "let", "const"
+                "console", "log", "alert", "prompt", "confirm", "document", "window",
+                "Math", "Date", "Array", "Object", "String", "Number", "Boolean",
+                "Function", "RegExp", "JSON", "Promise", "async", "await", "let", "const",
+                "var", "if", "else", "for", "while", "do", "switch", "case", "default",
+                "break", "continue", "return", "function", "class", "extends", "super",
+                "this", "new", "delete", "typeof", "instanceof", "in",
+                "null", "undefined", "true", "false", "try", "catch", "finally", "throw",
+                "export", "import", "from", "as"
             },
             "typescript": {
-                # TypeScript内置函数和关键字（包含JavaScript的）
-                "console", "log", "alert", "prompt", "confirm", "document", "window", 
-                "Math", "Date", "Array", "Object", "String", "Number", "Boolean", 
-                "Function", "RegExp", "JSON", "Promise", "async", "await", "let", "const", 
-                "var", "if", "else", "for", "while", "do", "switch", "case", "default", 
-                "break", "continue", "return", "function", "class", "extends", "super", 
-                "constructor", "this", "new", "delete", "typeof", "instanceof", "in", 
-                "null", "undefined", "true", "false", "try", "catch", "finally", "throw", 
-                "export", "import", "from", "as", "static", "async", "await", "of", "let", "const",
-                "interface", "type", "enum", "namespace", "declare", "module", "any", "void",
-                "never", "unknown", "symbol", "bigint", "readonly", "abstract", "protected", "private", "public"
+                "console", "log", "alert", "prompt", "confirm", "document", "window",
+                "Math", "Date", "Array", "Object", "String", "Number", "Boolean",
+                "Function", "RegExp", "JSON", "Promise", "async", "await", "let", "const",
+                "var", "if", "else", "for", "while", "do", "switch", "case", "default",
+                "break", "continue", "return", "function", "class", "extends", "super",
+                "this", "new", "delete", "typeof", "instanceof", "in",
+                "null", "undefined", "true", "false", "try", "catch", "finally", "throw",
+                "export", "import", "from", "as", "interface", "type", "enum", "any", "void",
             },
             "java": {
-                # Java内置函数和关键字
-                "System", "out", "println", "print", "Scanner", "String", "Integer", "Double", 
-                "Float", "Long", "Short", "Byte", "Boolean", "Character", "Object", "Class", 
-                "Math", "Random", "ArrayList", "LinkedList", "HashMap", "HashSet", "TreeMap", 
-                "TreeSet", "if", "else", "for", "while", "do", "switch", "case", "default", 
-                "break", "continue", "return", "public", "private", "protected", "static", 
-                "final", "abstract", "class", "interface", "extends", "implements", "package", 
-                "import", "new", "this", "super", "void", "int", "double", "float", "long", 
-                "short", "byte", "boolean", "char", "true", "false", "null", "try", "catch", 
-                "finally", "throw", "throws", "synchronized", "volatile", "transient", "native", "strictfp"
+                "System", "out", "println", "print", "Scanner", "String", "Integer", "Double",
+                "Math", "Random", "ArrayList", "HashMap", "if", "else", "for", "while",
+                "break", "continue", "return", "public", "private", "protected", "static",
+                "final", "class", "interface", "extends", "implements", "new", "this", "void",
+                "int", "double", "float", "long", "short", "byte", "boolean", "char"
             },
             "c": {
-                # C内置函数和关键字
-                "printf", "scanf", "malloc", "free", "calloc", "realloc", "strlen", "strcmp", 
-                "strcpy", "strcat", "memset", "memcpy", "memcmp", "exit", "getchar", "putchar", 
-                "if", "else", "for", "while", "do", "switch", "case", "default", "break", 
-                "continue", "return", "void", "int", "double", "float", "long", "short", 
-                "char", "unsigned", "signed", "const", "volatile", "static", "extern", 
-                "register", "auto", "struct", "union", "enum", "typedef", "sizeof", 
-                "return", "goto", "switch", "case", "default", "break", "continue", "if", "else", 
-                "for", "while", "do", "void", "int", "double", "float", "long", "short", "char"
+                "printf", "scanf", "malloc", "free", "strlen", "strcmp",
+                "if", "else", "for", "while", "do", "switch", "case", "default", "break",
+                "continue", "return", "void", "int", "double", "float", "long", "short",
+                "char", "unsigned", "const", "static", "extern", "struct", "union", "enum"
             },
             "cpp": {
-                # C++内置函数和关键字（包含C的）
-                "cout", "cin", "endl", "printf", "scanf", "malloc", "free", "calloc", 
-                "realloc", "strlen", "strcmp", "strcpy", "strcat", "memset", "memcpy", 
-                "memcmp", "exit", "getchar", "putchar", "if", "else", "for", "while", 
-                "do", "switch", "case", "default", "break", "continue", "return", 
-                "void", "int", "double", "float", "long", "short", "char", "unsigned", 
-                "signed", "const", "volatile", "static", "extern", "register", "auto", 
-                "struct", "union", "enum", "typedef", "sizeof", "return", "goto", "switch", 
-                "case", "default", "break", "continue", "if", "else", "for", "while", 
-                "do", "void", "int", "double", "float", "long", "short", "char", "class", 
-                "public", "private", "protected", "virtual", "override", "final", "namespace", 
-                "using", "template", "typename", "new", "delete", "this", "super", 
-                "try", "catch", "throw", "constexpr", "const_cast", "dynamic_cast", 
-                "static_cast", "reinterpret_cast", "typeid", "explicit", "friend", "inline", 
-                "mutable", "noexcept", "nullptr", "operator", "private", "protected", 
-                "public", "static", "struct", "template", "this", "typedef", "typename", 
-                "using", "virtual", "void"
+                "cout", "cin", "endl", "printf", "scanf", "malloc", "free",
+                "if", "else", "for", "while", "do", "switch", "case", "default", "break",
+                "continue", "return", "void", "int", "double", "float", "long", "short",
+                "char", "class", "public", "private", "protected", "virtual", "namespace",
+                "new", "delete", "this", "try", "catch", "throw", "nullptr"
             },
             "csharp": {
-                # C#内置函数和关键字
-                "Console", "Write", "WriteLine", "Read", "ReadLine", "String", "Int32", 
-                "Double", "Float", "Long", "Short", "Byte", "Boolean", "Char", "Object", 
-                "Array", "List", "Dictionary", "HashSet", "Stack", "Queue", "if", "else", 
-                "for", "while", "do", "switch", "case", "default", "break", "continue", 
-                "return", "public", "private", "protected", "internal", "static", "readonly", 
-                "const", "class", "struct", "interface", "enum", "delegate", "event", 
-                "namespace", "using", "new", "this", "base", "void", "int", "double", 
-                "float", "long", "short", "byte", "bool", "char", "true", "false", 
-                "null", "try", "catch", "finally", "throw", "async", "await", "yield", 
-                "lock", "volatile", "extern", "unsafe", "fixed", "ref", "out", "in", 
-                "params", "optional", "dynamic", "var", "typeof", "is", "as", "sizeof"
+                "Console", "Write", "WriteLine", "String", "Int32", "Double",
+                "if", "else", "for", "while", "do", "switch", "case", "default", "break",
+                "continue", "return", "public", "private", "protected", "static", "class",
+                "void", "int", "double", "true", "false", "null", "try", "catch"
             },
             "go": {
-                # Go内置函数和关键字
-                "fmt", "Print", "Println", "Printf", "Scan", "Scanln", "Scanf", "log", 
-                "os", "File", "Reader", "Writer", "io", "net", "http", "json", 
-                "strconv", "strings", "bytes", "time", "math", "rand", "sort", 
-                "if", "else", "for", "switch", "case", "default", "break", "continue", 
-                "return", "func", "var", "const", "type", "struct", "interface", "map", 
-                "slice", "array", "chan", "select", "go", "defer", "panic", "recover", 
-                "new", "make", "delete", "len", "cap", "append", "copy", "close", 
-                "true", "false", "nil", "package", "import", "func", "type", "var", "const"
+                "fmt", "Print", "Println", "Printf", "log", "os", "json",
+                "if", "else", "for", "switch", "case", "default", "break", "continue",
+                "return", "func", "var", "const", "type", "struct", "interface", "map",
+                "true", "false", "nil"
             },
             "ruby": {
-                # Ruby内置函数和关键字
-                "puts", "print", "gets", "chomp", "require", "load", "module", "class", 
-                "def", "if", "else", "elsif", "end", "for", "while", "until", "do", "break", 
-                "continue", "return", "next", "redo", "retry", "true", "false", "nil", "self", 
-                "super", "new", "initialize", "attr_reader", "attr_writer", "attr_accessor", 
-                "public", "private", "protected", "module_function", "include", "extend", 
-                "raise", "rescue", "ensure", "begin", "end", "case", "when", "default", "then", 
-                "and", "or", "not", "in", "is_a?", "instance_of?", "respond_to?", "nil?", "empty?"
+                "puts", "print", "gets", "require", "module", "class",
+                "def", "if", "else", "elsif", "end", "for", "while", "do", "break",
+                "return", "true", "false", "nil", "self", "new"
             },
             "php": {
-                # PHP内置函数和关键字
-                "echo", "print", "printf", "sprintf", "scanf", "fscanf", "file_get_contents", 
-                "file_put_contents", "require", "require_once", "include", "include_once", 
-                "if", "else", "elseif", "for", "foreach", "while", "do", "switch", "case", 
-                "default", "break", "continue", "return", "function", "class", "extends", 
-                "implements", "namespace", "use", "new", "this", "self", "parent", "static", 
-                "public", "private", "protected", "final", "abstract", "interface", "trait", 
-                "const", "var", "global", "static", "goto", "try", "catch", "finally", "throw", 
-                "die", "exit", "true", "false", "null", "isset", "unset", "empty", "is_null", 
-                "array", "list", "clone", "instanceof", "echo", "print", "printf", "sprintf"
+                "echo", "print", "printf", "require", "include", "if", "else", "elseif",
+                "for", "foreach", "while", "do", "switch", "case", "default", "function",
+                "class", "extends", "new", "public", "private", "protected", "true", "false", "null"
             }
         }
-        
-        # 获取当前语言的内置符号列表
+
         current_builtins = builtins_map.get(self.language, set())
-        
         return symbol_name in current_builtins
-    
+
     def _check_javascript_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查JavaScript代码的符号定义
-        
-        Args:
-            code: 要检查的JavaScript代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_java_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查Java代码的符号定义
-        
-        Args:
-            code: 要检查的Java代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_c_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查C和C++代码的符号定义
-        
-        Args:
-            code: 要检查的C/C++代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_csharp_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查C#代码的符号定义
-        
-        Args:
-            code: 要检查的C#代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_go_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查Go代码的符号定义
-        
-        Args:
-            code: 要检查的Go代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_ruby_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查Ruby代码的符号定义
-        
-        Args:
-            code: 要检查的Ruby代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
-    
+
     def _check_php_code(self, code: str, file_path: Optional[str] = None) -> List[StaticCheckError]:
-        """
-        检查PHP代码的符号定义
-        
-        Args:
-            code: 要检查的PHP代码
-            file_path: 文件路径（可选）
-            
-        Returns:
-            检查到的错误列表
-        """
-        # 使用正则表达式进行基本的符号检查
-        # 由于没有完整的解析器，这里只做简单的检查
         return self.get_errors()
+
+
+class StaticCheckerFactory:
+    def __init__(self):
+        self._checkers: Dict[str, List[Type[BaseStaticChecker]]] = {}
+        self._language_to_extensions: Dict[str, List[str]] = {}
+
+        self._register_default_checkers()
+        self._register_default_language_mappings()
+
+    def _register_default_checkers(self):
+        symbol_checker_languages = [
+            "python", "javascript", "typescript", "java", "c", "cpp",
+            "csharp", "go", "ruby", "php"
+        ]
+
+        for lang in symbol_checker_languages:
+            self.register_checker(lang, SymbolChecker)
+
+    def _register_default_language_mappings(self):
+        self._language_to_extensions = SymbolChecker.LANGUAGE_EXTENSIONS.copy()
+
+    def register_checker(self, language: str, checker_class: Type[BaseStaticChecker]):
+        if language not in self._checkers:
+            self._checkers[language] = []
+
+        if checker_class not in self._checkers[language]:
+            self._checkers[language].append(checker_class)
+
+    def register_language_extension(self, language: str, extension: str):
+        if language not in self._language_to_extensions:
+            self._language_to_extensions[language] = []
+
+        if extension not in self._language_to_extensions[language]:
+            self._language_to_extensions[language].append(extension)
+
+    def get_language_from_file(self, file_path: str) -> Optional[str]:
+        _, ext = os.path.splitext(file_path)
+
+        for lang, extensions in self._language_to_extensions.items():
+            if ext in extensions:
+                return lang
+
+        return None
+
+    def create_checkers(self, language: str, editor_widget=None) -> List[BaseStaticChecker]:
+        checkers = []
+
+        if language in self._checkers:
+            for checker_class in self._checkers[language]:
+                checkers.append(checker_class(language, editor_widget))
+
+        return checkers
+
+    def create_checkers_for_file(self, file_path: str, editor_widget=None) -> List[BaseStaticChecker]:
+        language = self.get_language_from_file(file_path)
+        if language:
+            return self.create_checkers(language, editor_widget)
+        return []
+
+    def get_supported_languages(self) -> List[str]:
+        return list(self._checkers.keys())
+
+    def get_supported_extensions(self) -> List[str]:
+        extensions = []
+        for exts in self._language_to_extensions.values():
+            extensions.extend(exts)
+        return list(set(extensions))
+
+
+class StaticCheckManager:
+    def __init__(self):
+        self.checker_factory = StaticCheckerFactory()
+        self._current_errors: Dict[str, List[StaticCheckError]] = {}
+        self._editor_mappings = {}
+        self.flake8_tree = None
+
+        self._error_theme = self._load_error_theme()
+
+        self._editor_tooltips = {}
+
+    def set_flake8_tree(self, tree_widget):
+        """设置flake8结果表格组件"""
+        self.flake8_tree = tree_widget
+
+    def _cleanup_editor_resources(self, editor_widget):
+        try:
+            if hasattr(editor_widget, "_tooltip") and editor_widget._tooltip:
+                try:
+                    editor_widget._tooltip.destroy()
+                except Exception:
+                    pass
+                finally:
+                    editor_widget._tooltip = None
+
+            if hasattr(editor_widget, "tag_names"):
+                for tag in editor_widget.tag_names():
+                    if tag == "error" or tag == "warning" or tag.startswith("error_"):
+                        editor_widget.tag_remove(tag, "1.0", "end")
+        except Exception as e:
+            print(f"清理编辑器资源失败: {str(e)}")
+
+    def _load_error_theme(self):
+        try:
+            from pathlib import Path
+
+            theme_dir = Path(__file__).parent.parent.parent / "asset" / "theme"
+            theme_file = theme_dir / "vscode-dark.json"
+
+            if not theme_file.exists():
+                print(f"主题文件未找到: {theme_file}")
+                return self._get_default_error_theme()
+
+            with open(theme_file, 'r', encoding='utf-8') as f:
+                theme_config = json.load(f)
+
+            error_theme = {}
+            error_theme['error_color'] = theme_config.get('error', '#F44747')
+            error_theme['warning_color'] = theme_config.get('warning', '#DDB100')
+            error_theme['error_background'] = theme_config.get('error_background', '#FFEBEB')
+
+            print(f"加载错误主题配置: {error_theme}")
+            return error_theme
+
+        except Exception as e:
+            print(f"加载错误主题失败: {str(e)}")
+            return self._get_default_error_theme()
+
+    def _get_default_error_theme(self):
+        return {
+            'error_color': '#F44747',
+            'warning_color': '#DDB100',
+            'error_background': '#FFEBEB'
+        }
+
+    def register_editor(self, editor_widget, file_path: str | None = None):
+        self._editor_mappings[editor_widget] = file_path
+
+    def unregister_editor(self, editor_widget):
+        if editor_widget in self._editor_mappings:
+            del self._editor_mappings[editor_widget]
+
+    def update_file_path(self, editor_widget, file_path: str):
+        if editor_widget in self._editor_mappings:
+            self._editor_mappings[editor_widget] = file_path
+
+    def check_code(self, code: str, file_path: Optional[str] = None, editor_widget=None) -> List[StaticCheckError]:
+        print(f"静态检查开始，文件路径: {file_path}, 代码长度: {len(code)}")
+        language = self.checker_factory.get_language_from_file(file_path) if file_path else None
+
+        print(f"检测到的语言: {language}")
+
+        if not language:
+            print("无法从文件路径确定语言，使用默认语言Python")
+            language = "python"
+
+        checkers = self.checker_factory.create_checkers(language, editor_widget)
+        print(f"创建的检查器数量: {len(checkers)}, 检查器类型: {[type(c).__name__ for c in checkers]}")
+
+        all_errors = []
+
+        for checker in checkers:
+            print(f"执行检查器: {type(checker).__name__}")
+            errors = checker.check(code, file_path)
+            print(f"检查器返回的错误数量: {len(errors)}")
+            all_errors.extend(errors)
+
+        print(f"所有检查器完成，总错误数量: {len(all_errors)}")
+
+        if file_path:
+            self._current_errors[file_path] = all_errors
+
+        if editor_widget:
+            print(f"更新编辑器错误显示，错误数量: {len(all_errors)}")
+            self._update_editor_errors(editor_widget, all_errors)
+
+        if self.flake8_tree:
+            self._update_flake8_tree(all_errors)
+
+        return all_errors
+
+    def _update_flake8_tree(self, errors: List[StaticCheckError]):
+        """更新flake8结果表格"""
+        print(f"更新flake8结果表格，错误数量: {len(errors)}")
+        
+        try:
+            for item in self.flake8_tree.get_children():
+                self.flake8_tree.delete(item)
+            
+            for error in errors:
+                icon = "❌" if error.severity == "error" else "⚠️"
+                self.flake8_tree.insert("", "end", values=(
+                    icon,
+                    error.line,
+                    error.column,
+                    error.error_type,
+                    error.error_message
+                ))
+            
+            error_count = len(errors)
+            error_text = f"{error_count} 个问题"
+            
+            if hasattr(self.flake8_tree, 'master') and hasattr(self.flake8_tree.master.master, 'error_count_label'):
+                try:
+                    self.flake8_tree.master.master.error_count_label.config(text=error_text)
+                except Exception:
+                    pass
+            
+            print(f"flake8表格更新完成")
+        except Exception as e:
+            print(f"更新flake8表格失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def _update_editor_errors(self, editor_widget, errors: List[StaticCheckError]):
+        print(f"更新编辑器错误显示，错误数量: {len(errors)}")
+
+        try:
+            for tag in editor_widget.tag_names():
+                if tag.startswith("error_marker_") or tag == "error_line" or tag == "warning_line":
+                    editor_widget.tag_remove(tag, "1.0", "end")
+
+            editor_widget.tag_remove("error", "1.0", "end")
+            editor_widget.tag_remove("warning", "1.0", "end")
+
+            self._hide_error_popup()
+
+            if not errors:
+                print("没有错误需要标记")
+                return
+
+            line_errors = {}
+            for error in errors:
+                if error.line not in line_errors:
+                    line_errors[error.line] = []
+                line_errors[error.line].append(error)
+
+            for line_num, line_errors_list in line_errors.items():
+                self._add_error_marker(editor_widget, line_num, line_errors_list)
+
+        except Exception as e:
+            print(f"更新编辑器错误显示失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def _add_error_marker(self, editor_widget, line_num: int, errors: List[StaticCheckError]):
+        """在行末添加错误标记"""
+        try:
+            line_content = editor_widget.get(f"{line_num}.0", f"{line_num}.end")
+            line_len = len(line_content)
+
+            marker_pos = f"{line_num}.{line_len}"
+
+            error_count = len(errors)
+            error_count_text = str(error_count)
+
+            is_error = any(e.severity == "error" for e in errors)
+            tag = "error" if is_error else "warning"
+            bg_color = self._error_theme['error_color'] if is_error else self._error_theme['warning_color']
+
+            editor_widget.tag_configure(tag,
+                                        underline=True,
+                                        foreground=bg_color)
+
+            marker_tag = f"error_marker_{line_num}"
+            editor_widget.tag_configure(marker_tag,
+                                        background=bg_color,
+                                        foreground="white")
+
+            editor_widget.tag_add(marker_tag, marker_pos, marker_pos + " lineend")
+
+            editor_widget.tag_bind(marker_tag, "<Button-1>", 
+                lambda e, ln=line_num, errs=errors: self._show_error_popup(e, editor_widget, ln, errs))
+
+        except Exception as e:
+            print(f"添加错误标记失败: {str(e)}")
+
+    def _show_error_popup(self, event, editor_widget, line_num: int, errors: List[StaticCheckError]):
+        """显示错误详情弹出窗口"""
+        try:
+            self._hide_error_popup()
+
+            popup = Toplevel(editor_widget)
+            popup.wm_overrideredirect(True)
+
+            x = event.x_root + 10
+            y = event.y_root + 10
+            popup.wm_geometry(f"+{x}+{y}")
+
+            popup.configure(background="#2d2d2d")
+
+            is_error = any(e.severity == "error" for e in errors)
+            header_bg = self._error_theme['error_color'] if is_error else self._error_theme['warning_color']
+
+            header_frame = Frame(popup, background=header_bg, padx=10, pady=5)
+            header_frame.pack(fill="x")
+
+            title_text = f"错误 ({len(errors)})" if is_error else f"警告 ({len(errors)})"
+            title_label = Label(header_frame, text=title_text, background=header_bg, foreground="white", font=("Arial", 10, "bold"))
+            title_label.pack(side="left")
+
+            close_btn = Button(header_frame, text="✕", background=header_bg, foreground="white",
+                            borderwidth=0, font=("Arial", 10), cursor="hand2",
+                            command=lambda: self._hide_error_popup())
+            close_btn.pack(side="right")
+
+            content_frame = Frame(popup, background="#2d2d2d", padx=10, pady=5)
+            content_frame.pack(fill="both", expand=True)
+
+            for error in errors:
+                error_label = Label(content_frame, 
+                                 text=f"• {error.error_message}",
+                                 background="#2d2d2d", 
+                                 foreground="#ffffff",
+                                 font=("Arial", 9),
+                                 wraplength=300,
+                                 justify="left",
+                                 anchor="w")
+                error_label.pack(anchor="w", pady=2)
+
+            self._error_popup = popup
+            popup.bind("<Leave>", lambda e: self._hide_error_popup())
+
+        except Exception as e:
+            print(f"显示错误弹出窗口失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def _hide_error_popup(self):
+        """隐藏错误弹出窗口"""
+        if hasattr(self, '_error_popup') and self._error_popup:
+            try:
+                self._error_popup.destroy()
+            except Exception:
+                pass
+            self._error_popup = None
+
+    def _show_simple_tooltip(self, event, editor_widget, error):
+        try:
+            self._hide_simple_tooltip(event, editor_widget)
+
+            from tkinter import Toplevel, Label
+
+            tooltip = Toplevel(editor_widget)
+            tooltip.wm_overrideredirect(True)
+
+            x = event.x_root + 10
+            y = event.y_root + 10
+            tooltip.wm_geometry(f"+{x}+{y}")
+
+            message = f"{error.error_type}: {error.error_message}"
+            label = Label(tooltip, text=message,
+                         background="#fff3cd",
+                         foreground="#856404",
+                         borderwidth=1,
+                         relief="solid",
+                         padx=5,
+                         pady=3,
+                         font=("Arial", 10))
+            label.pack()
+
+            editor_widget._tooltip = tooltip
+            print(f"显示简单提示: {message}")
+        except Exception as e:
+            print(f"显示提示失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def _hide_simple_tooltip(self, event, editor_widget):
+        try:
+            if hasattr(editor_widget, "_tooltip") and editor_widget._tooltip:
+                editor_widget._tooltip.destroy()
+                editor_widget._tooltip = None
+                print("隐藏简单提示")
+        except Exception as e:
+            print(f"隐藏提示失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def _clear_editor_errors(self, editor_widget):
+        print("清除编辑器中的所有错误标记")
+        try:
+            editor_widget.tag_remove("error", "1.0", "end")
+            editor_widget.tag_remove("warning", "1.0", "end")
+            editor_widget.tag_remove("static_check_error", "1.0", "end")
+
+            for tag in editor_widget.tag_names():
+                if tag.startswith("error_"):
+                    editor_widget.tag_remove(tag, "1.0", "end")
+
+            if hasattr(editor_widget, "_tooltip") and editor_widget._tooltip:
+                try:
+                    editor_widget._tooltip.destroy()
+                except:
+                    pass
+                finally:
+                    editor_widget._tooltip = None
+
+            print("成功清除错误标记")
+        except Exception as e:
+            print(f"清除编辑器错误标记失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+    def get_current_errors(self, file_path: Optional[str] = None) -> List[StaticCheckError]:
+        if file_path:
+            return self._current_errors.get(file_path, [])
+        return []
+
+    def get_supported_languages(self) -> List[str]:
+        return self.checker_factory.get_supported_languages()
+
+    def get_supported_extensions(self) -> List[str]:
+        return self.checker_factory.get_supported_extensions()

@@ -12,7 +12,7 @@ from tkinter.ttk import Notebook
 from library.highlighter_factory import HighlighterFactory
 from library.logger import get_logger
 from library.api import Settings
-from library.static_checker.static_check_manager import StaticCheckManager
+from library.static_checker.symbol_checker import StaticCheckManager
 from ui.tabs import SettingsTab, HelpTab
 from library.ui_styles import get_style
 
@@ -62,6 +62,10 @@ class MultiFileEditor:
         
         # 静态代码检查管理器
         self.static_check_manager = StaticCheckManager()
+        
+        # 设置flake8结果表格
+        if printarea is not None:
+            self.static_check_manager.set_flake8_tree(printarea)
         
         # 防抖机制相关变量
         self._debounce_timers = {}  # {editor_id: timer_id}
