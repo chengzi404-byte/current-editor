@@ -1,134 +1,244 @@
-
+<div align="center">
 
 # Current Editor
 
-<div align="center">
-  <b>让编程更高效、更优雅</b><br>
-  <i>基于 Python 的现代化轻量级代码编辑器</i><br>
-  
-  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-  ![Python Version](https://img.shields.io/badge/Python-3.x-yellow)
+**一款基于 Tkinter + Python 构建的现代化国产可替代的代码编辑器**
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![PyQt6](https://img.shields.io/badge/PyQt6-6.0+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+[English](#english) | 简体中文
+
 </div>
-
-## ✨ 特性
-
-Current Editor 是一个功能完备且设计优雅的代码编辑器，专为提升开发效率而打造。
-
-*   **🚀 极速轻量**：基于 Python 标准 GUI 库 (Tkinter) 构建，启动迅速，资源占用低。
-*   **🎨 多彩语法高亮**：
-    *   **智能分析**：Python 代码基于 **AST 语法树** 进行深度解析，精确区分变量、函数、类、导入包等。
-    *   **广泛支持**：支持 Python、C/C++、Java、JavaScript、HTML、CSS、Go、Rust、Ruby、Objective-C、Bash 等数十种语言。
-*   **🧩 多文件编辑**：采用现代标签页 (Tab) 管理方式，支持同时打开并编辑多个文件。
-*   **🤖 AI 智能助手**：集成 Deepseek-R1 大模型，提供代码智能补全、错误修复建议和问答功能。
-*   **🛡️ 数据安全**：内置 **自动保存** 机制，每隔数秒自动备份编辑内容，防止意外丢失。
-*   **🎛️ 高度可定制**：
-    *   多种预设主题（VS Code Dark、Dracula、GitHub、Solarized 等）。
-    *   灵活的配置系统，支持调整字体、编码、界面语言等。
-*   **🖥️ 集成终端**：内置命令行界面，可直接在编辑器中运行代码或系统命令。
-*   **🔌 插件系统**：提供基础的插件开发框架，支持功能扩展。
-*   **📝 静态检查**：内置代码静态检查功能，辅助发现潜在语法错误。
-
-## 📦 安装与运行
-
-### 前置条件
-*   Python 3.6 或更高版本
-
-### 快速安装
-
-1.  **克隆仓库**：
-    ```bash
-    git clone https://gitee.com/chengzi404-byte/phoenix-editor.git
-    ```
-2.  **进入目录**：
-    ```bash
-    cd phoenix-editor
-    ```
-3.  **启动编辑器**：
-    ```bash
-    python app.py
-    ```
-
-> 💡 **提示**：首次启动时，编辑器会自动检测 Python 环境并优化配置。
-
-## 📖 使用指南
-
-### 基本操作
-*   **新建文件/窗口**：菜单栏 `文件` -> `新建文件` / `新建窗口`
-*   **打开文件**：菜单栏 `文件` -> `打开文件`
-*   **保存/另存为**：菜单栏 `文件` -> `保存文件` / `另存为`
-*   **运行代码**：点击菜单栏 `运行` -> `运行`，或使用快捷键 `F5`
-*   **AI 对话**：在侧边栏或特定面板中与 AI 助手交互（需配置 API Key）
-
-### 配置设置
-通过 `设置` 菜单可以调整：
-*   **编辑器**：字体大小、文件编码、行号显示、自动换行。
-*   **高亮**：语法高亮主题、代码类型。
-*   **系统**：自动保存间隔、界面语言、调试模式。
-
-### 快捷键
-| 功能 | 快捷键 |
-| :--- | :--- |
-| 运行代码 | `F5` |
-| 保存 | `Ctrl + S` |
-| 撤销 | `Ctrl + Z` |
-| 重做 | `Ctrl + Y` |
-| 复制 | `Ctrl + C` |
-| 粘贴 | `Ctrl + V` |
-
-## 🏗️ 项目架构
-
-项目采用了清晰的模块化设计，便于维护和扩展。
-
-```
-current-editor/
-├── library/            # 🧠 核心逻辑库
-│   ├── highlighter/    # 语法高亮引擎 (支持多语言)
-│   ├── operations/     # 核心操作接口 (Editor, File, AI Operations)
-│   ├── ui_styles.py    # UI 样式定义
-│   ├── plugins/        # 插件管理系统
-│   └── static_check/   # 静态代码检查 (符号分析、括号匹配)
-├── ui/                 # 🎨 用户界面组件
-│   ├── main_window.py # 主窗口框架
-│   ├── menu.py         # 菜单栏实现
-│   ├── tabs.py         # 标签页管理
-│   └── file_browser.py # 文件浏览器
-├── asset/              # 📁 资源文件
-│   ├── theme/          # 配色主题文件 (JSON格式)
-│   └── icons/          # 图标资源
-├── lang/               # 🌍 多语言翻译文件
-├── test/               # 🧪 单元测试代码
-├── app.py              # 🚀 程序入口
-└── i18n.py             # 国际化支持
-```
-
-## 🧪 测试
-
-项目包含完整的单元测试，涵盖了语法高亮、文件操作等核心模块。
-
-```bash
-# 运行所有测试
-python -m unittest discover test
-```
-
-## 🤝 贡献
-
-我们欢迎社区贡献者参与项目改进！
-
-1.  **Fork** 本仓库。
-2.  创建您的特性分支 (`git checkout -b feature/AmazingFeature`)。
-3.  提交您的更改 (`git commit -m 'Add some AmazingFeature'`)。
-4.  推送至分支 (`git push origin feature/AmazingFeature`)。
-5.  提交一个 **Pull Request**。
-
-## 📄 许可证
-
-本项目采用 **Apache License 2.0** 开源协议。详细内容请参阅 [LICENSE](LICENSE) 文件。
-
-## 📞 联系我们
-
-*   **Gitee 主页**: [https://gitee.com/chengzi404-byte/phoenix-editor](https://gitee.com/chengzi404-byte/phoenix-editor)
-*   **问题反馈**: [https://gitee.com/chengzi404-byte/phoenix-editor/issues](https://gitee.com/chengzi404-byte/phoenix-editor/issues)
 
 ---
 
-**Current Editor** - 专注于为开发者提供纯净而强大的编码体验。
+## ✨ 功能特性
+
+- 🖥️ **现代化界面** - 简洁美观的用户界面设计
+- 🎨 **多主题支持** - 内置 13+ 款精美主题
+- 📝 **语法高亮** - 支持多种编程语言的语法高亮
+- 📁 **文件管理** - 内置文件资源管理器，轻松浏览项目
+- 💻 **集成终端** - 内置终端，无需切换窗口
+- 🌐 **国际化** - 支持中文/英文界面
+- ⚡ **代码运行** - 一键运行 Python 代码
+
+---
+
+## 📸 应用预览
+
+<div align="center">
+
+![Windows 效果图](image.png)
+<p style="font-style: italic; color: #666;">Windows 效果图</p>
+
+</div>
+
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python 3.8 或更高版本
+- pip 包管理器
+- npm 包管理器
+
+### 安装步骤
+
+1. **克隆仓库**
+
+```bash
+git clone https://gitee.com/chengzi404-byte/current-editor.git
+cd current-editor
+```
+
+2. **创建虚拟环境（推荐）**
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Linux/macOS
+source venv/bin/activate
+```
+
+3. **安装依赖**
+
+```bash
+pip install PyQt6 PySide6 pylint flake8
+npm install pyright -g # 可选，用于代码高亮和代码诊断
+```
+
+4. **运行程序**
+
+```bash
+python main.py
+```
+
+---
+
+## 🎨 主题预览
+
+Current Editor 内置多款精美主题：
+
+<div align="center">
+
+| 主题 | 预览 |
+|:---:|:---:|
+| GitHub Dark | 深色主题 |
+| GitHub Light | 浅色主题 |
+| VSCode Dark | VSCode 风格深色 |
+| VSCode Light | VSCode 风格浅色 |
+| One Dark Pro | Atom 风格 |
+| Dracula | 经典 Dracula |
+| Monokai | Sublime 经典 |
+| Nord | 北欧风格 |
+| Material | Material Design |
+| Solarized Dark | Solarized 深色 |
+| Solarized Light | Solarized 浅色 |
+
+</div>
+
+---
+
+## 📁 项目结构
+
+```
+current-editor/
+├── asset/                  # 资源文件
+│   ├── lang/              # 国际化语言文件
+│   │   ├── zh.json        # 中文
+│   │   └── en.json        # 英文
+│   ├── theme/             # 主题文件
+│   │   ├── github-dark.json
+│   │   ├── vscode-dark.json
+│   │   └── ...
+│   └── settings.json      # 配置文件
+├── library/               # 核心库
+│   ├── api.py            # 配置 API
+│   ├── i18n.py           # 国际化支持
+│   ├── logger.py         # 日志系统
+|   └── ...
+├── ui/                    # 用户界面
+│   ├── main_window.py    # 主窗口
+│   ├── file_browser.py    # 语法高亮
+│   ├── menu.py       # 终端组件
+│   └── tabs.py     # LSP 客户端
+├── main.py               # 程序入口
+├── pyproject.toml        # 项目配置
+└── LICENSE               # 许可证
+```
+
+---
+
+## ⚙️ 配置说明
+
+配置文件位于 `asset/settings.json`：
+
+```json
+{
+    "editor.file-encoding": "utf-8",
+    "editor.lang": "zh",
+    "editor.font": "Consolas",
+    "editor.fontsize": 12,
+    "editor.file-path": "./temp",
+    "highlighter.syntax-highlighting": {
+        "theme": "vscode-light",
+        "enable-type-hints": true,
+        "enable-docstrings": true,
+        "code": "python"
+    },
+    "run.timeout": 1000,
+    "run.racemode": false
+}
+```
+
+### 配置项说明
+
+| 配置项 | 说明 | 默认值 |
+|:---|:---|:---|
+| `editor.file-encoding` | 文件编码 | `utf-8` |
+| `editor.lang` | 界面语言 | `zh` |
+| `editor.font` | 编辑器字体 | `Consolas` |
+| `editor.fontsize` | 字体大小 | `12` |
+| `highlighter.syntax-highlighting.theme` | 主题名称 | `vscode-light` |
+
+---
+
+## ⌨️ 快捷键
+
+| 快捷键 | 功能 |
+|:---:|:---|
+| `Ctrl + N` | 新建文件 |
+| `Ctrl + O` | 打开文件 |
+| `Ctrl + S` | 保存文件 |
+| `Ctrl + Shift + S` | 另存为 |
+| `Ctrl + Z` | 撤销 |
+| `Ctrl + Y` | 重做 |
+| `Ctrl + X` | 剪切 |
+| `Ctrl + C` | 复制 |
+| `Ctrl + V` | 粘贴 |
+| `F5` | 运行代码 |
+| `Ctrl + Q` | 退出 |
+
+---
+
+## 🔌 支持的语言
+
+语法高亮支持以下编程语言：
+
+- Python (`.py`)
+- JavaScript (`.js`)
+- HTML (`.html`)
+- CSS (`.css`)
+- JSON (`.json`)
+- XML (`.xml`)
+- YAML (`.yaml`, `.yml`)
+- Markdown (`.md`)
+- C/C++ (`.c`, `.cpp`)
+- Java (`.java`)
+- Rust (`.rs`)
+- Go (`.go`)
+- Ruby (`.rb`)
+- PHP (`.php`)
+- Bash (`.sh`)
+
+---
+
+## 🤝 参与贡献
+
+欢迎所有形式的贡献！
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 提交 Pull Request
+
+**贡献榜单（不定期更新）：**
+
+* **chengzi404-byte**
+* **Eason**
+
+---
+
+## 📄 许可证
+
+本项目采用 Apache License 2.0 - 详见 [LICENSE](./LICENSE) 文件
+
+---
+
+<div align="center">
+
+## 🌟 Star History
+
+如果这个项目对你有帮助，请给一个 ⭐️ Star！
+
+</div>
+
+再此感谢所有的贡献者！
+
