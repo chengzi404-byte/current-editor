@@ -4,7 +4,7 @@
 
 **一款基于 Tkinter + Python 构建的现代化国产可替代的代码编辑器**
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11.0+-blue.svg)](https://www.python.org/)
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.0+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
