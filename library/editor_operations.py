@@ -21,7 +21,6 @@ from operations.terminal import TerminalOperations
 from operations.settings_manager import SettingsManager
 import os
 
-# 导入国际化模块
 from i18n import t
 
 logger = get_logger()
@@ -45,14 +44,12 @@ class EditorOperations:
             inputarea: 输入区域
             multi_editor: 多文件编辑器实例（可选）
         """
-        # 初始化新的操作类
         self.file_ops = FileOperations()
         self.edit_ops = EditOperations(codearea, commandarea)
         self.inputarea = inputarea
         self.terminal_ops = TerminalOperations(commandarea)
         self.settings_manager = SettingsManager(root, codearea, commandarea, t("settings"))
-        
-        # 保存旧的API需要的属性
+
         self.root = root
         self.codearea = codearea
         self.commandarea = commandarea
@@ -96,85 +93,66 @@ class EditorOperations:
         import os
         
         try:
-            # 1. 检查基本依赖
             if self.multi_editor is None:
                 logger.error("自动保存失败: self.multi_editor不存在")
                 return
-            
-            # 2. 获取并验证配置
+
             save_path_config = self.config.get("editor.file-path", "./temp")
-            
-            # 确保save_path是Path对象
+
             if isinstance(save_path_config, str):
                 save_path_config = Path(save_path_config)
-            
-            # 3. 确定保存目录
+
             if save_path_config.suffix:
                 save_dir = save_path_config.parent
             else:
                 save_dir = save_path_config
-            
-            # 4. 确保保存目录存在
+
             save_dir.mkdir(parents=True, exist_ok=True)
-            
-            # 5. 获取notebook和标签页
+
             notebook = self.multi_editor.get_notebook()
             tab_ids = notebook.tabs()
-            
-            # 6. 遍历标签页并保存内容
+
             save_count = 0
-            
-            # 方式1: 优先通过notebook.tabs()获取所有标签页
+
             for i, tab_id in enumerate(tab_ids):
-                # 获取标题
                 try:
                     title = notebook.tab(tab_id, "text")
                 except Exception:
                     title = f"untitled_{i}"
-                
-                # 获取编辑器
+
                 editor = None
-                
-                # 方式1.1: 通过get_editor方法
+
                 editor = self.multi_editor.get_editor(tab_id)
                 if not editor:
-                    # 方式1.2: 直接通过nametowidget获取
                     try:
-                        # 获取标签页框架
                         tab_frame = notebook.nametowidget(tab_id)
-                        # 查找框架中的Text组件
                         for child in tab_frame.winfo_children():
                             if child.winfo_class() == 'Text':
                                 editor = child
                                 break
                     except Exception:
                         pass
-                
+
                 if editor:
                     try:
-                        # 获取编辑器内容
                         content = editor.get("0.0", tk.END)
-                        
-                        # 检查内容是否为空
+
                         if not content.strip():
                             continue
-                        
-                        # 使用安全的文件名
+
                         safe_title = "".join(c if c.isalnum() or c in ('_', '-', '.') else '' for c in title)
                         file_path = save_dir / f"{safe_title}.txt"
-                        
-                        # 写入文件
+
                         with open(file_path, "w", encoding="utf-8") as f:
                             f.write(content)
-                        
-                        # 验证文件是否保存成功
+
                         if file_path.exists():
                             file_size = os.path.getsize(file_path)
                             logger.info(f"✅ 自动保存成功: {file_path} ({file_size} 字节)")
                             save_count += 1
                         else:
                             logger.error(f"❌ 自动保存失败: 文件不存在: {file_path}")
-                            
+
                     except Exception as save_error:
                         logger.error(f"❌ 自动保存失败: {str(save_error)}")
             
@@ -235,23 +213,23 @@ class EditorOperations:
         """插件 > 下载插件"""
         try:
             plugin_path = filedialog.askopenfilename(
-                title=t("open_plugin"),  # 使用多语言适配
+                title=t("open_plugin"),
                 filetypes=[
-                    (t("plugin-types.0"), "*.zip"),  # 使用多语言适配
-                    (t("plugin-types.1"), "*.*")    # 使用多语言适配
+                    (t("plugin-types.0"), "*.zip"),
+                    (t("plugin-types.1"), "*.*")
                 ]
             )
             if plugin_path:
                 plugin_zip = zipfile.ZipFile(plugin_path, "r")
                 plugin_zip.extractall(f"{Path.cwd() / 'asset' / 'plugins'}")
                 plugin_zip.close()
-                messagebox.showinfo(t("plugin"), t("plugin_installation_successful"))  # 使用多语言适配
+                messagebox.showinfo(t("plugin"), t("plugin_installation_successful"))
         except Exception as e:
-            messagebox.showerror(t("error"), f"{t('plugin_installation_failed')}: {str(e)}")  # 使用多语言适配
+            messagebox.showerror(t("error"), f"{t('plugin_installation_failed')}: {str(e)}")
     
     def exit_editor(self):
         """退出"""
-        if messagebox.askokcancel(t("exit"), t("exit_confirmation")):  # 使用多语言适配
+        if messagebox.askokcancel(t("exit"), t("exit_confirmation")):
             self.root.destroy()
             sys.exit(0)
     
@@ -265,10 +243,8 @@ class EditorOperations:
         from tkinter import filedialog
         folder_path = filedialog.askdirectory()
         if folder_path:
-            # 清空现有的文件树
             for item in self.root.file_tree.get_children():
                 self.root.file_tree.delete(item)
-            # 重新填充文件树
             self.populate_file_tree_for_open_folder(folder_path)
     
     def populate_file_tree_for_open_folder(self, path):

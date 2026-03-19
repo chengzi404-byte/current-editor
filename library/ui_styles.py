@@ -74,19 +74,26 @@ class ModernStyles:
     def setup_fonts(self):
         """设置现代化字体"""
         # 尝试使用现代化字体，如果系统没有则使用默认字体
-        modern_fonts = ["Segoe UI", "Microsoft YaHei UI", "PingFang SC", "SF Pro Display", "Inter"]
-        
+        modern_fonts = ["Microsoft YaHei UI", "Segoe UI", "PingFang SC", "SF Pro Display", "Inter"]
+
         for font_name in modern_fonts:
             try:
                 test_font = tkfont.Font(family=font_name, size=10)
-                if test_font.actual()["family"] == font_name:
-                    self.font_family = font_name
-                    break
-            except:
+                actual = test_font.actual()
+                # 更宽松的匹配：实际字体名包含我们想要的字体
+                if actual and actual.get("family"):
+                    actual_family = actual["family"]
+                    # 检查是否匹配或包含
+                    if (actual_family == font_name or
+                        font_name in actual_family or
+                        any(modern in actual_family for modern in modern_fonts)):
+                        self.font_family = actual_family
+                        break
+            except Exception:
                 continue
         else:
-            # 如果没有找到现代化字体，使用系统默认字体
-            self.font_family = "TkDefaultFont"
+            # 如果没有找到现代化字体，使用安全字体检测
+            self.font_family = self._get_safe_font_family()
         
         # 字体大小定义
         self.font_sizes = {
@@ -101,27 +108,87 @@ class ModernStyles:
     
     def get_font(self, size="base", weight="normal"):
         """获取字体配置"""
-        # 现代化字体栈：优先使用系统现代字体
-        font_stack = [
-            "Segoe UI Variable",  # Windows 11 现代字体
-            "Segoe UI",           # Windows 10/11
-            "SF Pro Display",     # macOS
-            "Inter",              # 现代网页字体
-            "Roboto",             # Material Design
-            "Arial",              # 通用字体
-            "sans-serif"          # 备用
-        ]
+        # 使用 setup_fonts 中检测到的可用字体，或提供安全默认值
+        font_family = getattr(self, 'font_family', None)
         
-        font_family = ", ".join(font_stack)
+        if not font_family or font_family == "TkDefaultFont":
+            # 在 Conda 环境下使用更可靠的方法检测可用字体
+            font_family = self._get_safe_font_family()
         
         font_size = self.font_sizes.get(size, 14)
         
         if weight == "bold":
             return (font_family, font_size, "bold")
         elif weight == "light":
-            return (font_family, font_size, "normal")  # tkinter 不支持 light 权重
+            return (font_family, font_size, "normal")
         else:
             return (font_family, font_size, "normal")
+    
+    def _get_safe_font_family(self):
+        """获取在不同环境下都可用的安全字体"""
+        # 字体列表按优先级排序（包括服务器环境中的字体）
+        safe_fonts = [
+            "Microsoft YaHei UI",    # Windows 中文系统
+            "Microsoft YaHei",       # Windows 中文系统（无UI后缀）
+            "SimHei",                # Windows 黑体
+            "SimSun",                # Windows 宋体
+            "Segoe UI",              # Windows 10/11
+            "Arial Unicode MS",      # 多语言支持
+            "WenQuanYi Micro Hei",   # Linux 文泉驿
+            "wenquanyi bitmap song", # Linux 文泉驿点阵宋体
+            "Noto Sans CJK SC",      # Linux Noto
+            "DejaVu Sans",           # Linux 常见字体
+            "Liberation Sans",       # Linux 常见字体
+            "Arial",                 # 通用字体
+            "Helvetica",             # 通用字体
+            "fixed",                 # X11 默认等宽字体
+            "clean",                 # X11 字体
+        ]
+
+        try:
+            # 导入 tkinter
+            import tkinter as tk
+
+            # 创建临时 root 窗口（需要创建 root 才能使用 font.families()）
+            root = tk.Tk()
+            root.withdraw()
+
+            # 获取系统所有可用字体
+            all_families = set(tkfont.families())
+
+            # 首先尝试完全匹配的字体
+            for font_name in safe_fonts:
+                if font_name in all_families:
+                    try:
+                        test_font = tkfont.Font(family=font_name, size=10)
+                        actual_family = test_font.actual("family")
+                        if actual_family and actual_family != "":
+                            root.destroy()
+                            return actual_family
+                    except Exception:
+                        continue
+
+            # 其次尝试不区分大小写的匹配
+            all_families_lower = {f.lower(): f for f in all_families}
+            for font_name in safe_fonts:
+                if font_name.lower() in all_families_lower:
+                    try:
+                        actual_name = all_families_lower[font_name.lower()]
+                        test_font = tkfont.Font(family=actual_name, size=10)
+                        actual_family = test_font.actual("family")
+                        if actual_family and actual_family != "":
+                            root.destroy()
+                            return actual_family
+                    except Exception:
+                        continue
+
+            root.destroy()
+
+        except Exception:
+            pass
+
+        # 如果都不可用，使用系统默认字体
+        return "TkDefaultFont"
 
     def get_icon(self, icon_name, size="md"):
         """获取图标字符（使用emoji作为图标）"""

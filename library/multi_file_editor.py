@@ -82,7 +82,55 @@ class MultiFileEditor:
         
         # 创建初始选项卡
         self.create_new_tab(t("untitled"), "")
-    
+
+    def _get_safe_editor_font(self):
+        """
+        获取安全的编辑器字体
+        在 Conda 环境下确保字体可用
+        """
+        try:
+            font_family = Settings.Editor.font()
+            font_size = Settings.Editor.font_size()
+
+            # 尝试创建字体
+            try:
+                test_font = Font(family=font_family, size=font_size)
+                # 检查字体是否真正可用
+                actual_family = test_font.actual("family")
+                if actual_family and actual_family != "":
+                    return test_font
+            except Exception:
+                pass
+
+            # 如果设置字体不可用，尝试常用字体
+            fallback_fonts = [
+                ("Microsoft YaHei UI", font_size),
+                ("SimHei", font_size),
+                ("Consolas", font_size),
+                ("Courier New", font_size),
+                ("DejaVu Sans Mono", font_size),
+                ("Liberation Mono", font_size),
+                ("TkFixedFont", font_size),  # Tkinter 默认等宽字体
+            ]
+
+            for family, size in fallback_fonts:
+                try:
+                    test_font = Font(family=family, size=size)
+                    actual_family = test_font.actual("family")
+                    if actual_family:
+                        logger.info(f"使用备用字体: {actual_family}")
+                        return test_font
+                except Exception:
+                    continue
+
+            # 最后的回退选项
+            logger.warning("无法找到合适的字体，使用系统默认字体")
+            return Font(family="TkFixedFont", size=12)
+
+        except Exception as e:
+            logger.error(f"字体设置失败: {e}")
+            return Font(family="TkFixedFont", size=12)
+
     def create_new_tab(self, title, content, file_path=None):
         """
         创建新的编辑选项卡
@@ -94,10 +142,10 @@ class MultiFileEditor:
         """
         # 创建选项卡框架
         tab_frame = Frame(self.notebook)
-        
-        # 创建文本编辑器
-        editor = Text(tab_frame, font=Font(self.parent, family=Settings.Editor.font(), 
-                                          size=Settings.Editor.font_size()))
+
+        # 创建文本编辑器 - 使用安全字体检测
+        editor_font = self._get_safe_editor_font()
+        editor = Text(tab_frame, font=editor_font)
         editor.pack(fill=BOTH, expand=True)
         
         # 插入初始内容
@@ -673,4 +721,15 @@ class MultiFileEditor:
     def update_font_for_all(self, font_family, font_size):
         """更新所有编辑器的字体"""
         for editor in self.tab_editors.values():
-            editor.configure(font=Font(self.parent, family=font_family, size=font_size))
+            try:
+                new_font = Font(family=font_family, size=font_size)
+                # 验证字体是否可用
+                if new_font.actual("family"):
+                    editor.configure(font=new_font)
+                else:
+                    raise ValueError("字体不可用")
+            except Exception as e:
+                logger.warning(f"字体 {font_family} 不可用，使用备用字体: {e}")
+                # 使用安全字体
+                fallback_font = self._get_safe_editor_font()
+                editor.configure(font=fallback_font)
